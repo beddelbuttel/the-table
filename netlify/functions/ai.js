@@ -41,12 +41,15 @@ exports.handler = async function(event) {
       const req = https.request(options, (res) => {
         let data = '';
         res.on('data', (chunk) => data += chunk);
-        res.on('end', () => resolve(data));
+        res.on('end', () => resolve({ status: res.statusCode, body: data }));
       });
       req.on('error', reject);
       req.write(payload);
       req.end();
     });
+
+    console.log('Anthropic status:', result.status);
+    console.log('Anthropic response:', result.body.substring(0, 500));
 
     return {
       statusCode: 200,
@@ -54,9 +57,10 @@ exports.handler = async function(event) {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: result
+      body: result.body
     };
   } catch (err) {
+    console.log('Function error:', err.message);
     return {
       statusCode: 500,
       headers: { 'Access-Control-Allow-Origin': '*' },
