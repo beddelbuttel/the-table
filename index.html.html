@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="The Table">
+<meta name="theme-color" content="#faf8f5">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<title>The Table — Eddelbuttel Nutrition</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Jost:wght@300;400;500&display=swap');
+*{-webkit-box-sizing:border-box;box-sizing:border-box;margin:0;padding:0}
+:root{
+--sage:#8a9e7e;--sage-l:#eef3eb;--sage-d:#5a6e50;
+--warm:#7a7370;--warm-l:#f5f3f0;--warm-d:#4a4442;
+--cream:#faf8f5;--bdr:#e8e4df;
+--red:#e24b4a;--red-l:#fff0f0;--red-d:#791f1f;
+--blue:#378add;--blue-l:#e6f1fb;--blue-d:#0c447c;
+--amber:#ef9f27;--amber-l:#faeeda;--amber-d:#633806;
+}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--warm-d);font-size:14px;min-height:100vh;-webkit-text-size-adjust:100%}
+.serif{font-family:'Cormorant Garamond',Georgia,serif}
+.hidden{display:none !important}
+.login-wrap{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;min-height:100vh;padding:2rem;background:var(--cream)}
+.brand{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:400;color:var(--warm);text-align:center}
+.sub{font-size:11px;letter-spacing:.18em;color:var(--sage);margin-top:5px;text-transform:uppercase;text-align:center}
+.login-card{background:#fff;border:0.5px solid var(--bdr);border-radius:14px;padding:2rem;width:100%;max-width:390px;margin-top:1.5rem}
+.login-card h2{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;margin-bottom:4px}
+.login-card p{font-size:13px;color:var(--warm);margin-bottom:1.25rem}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--warm);margin-bottom:5px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 12px;border:0.5px solid var(--bdr);border-radius:8px;font-family:'Jost',sans-serif;font-size:14px;background:#fff;color:var(--warm-d);-webkit-appearance:none;appearance:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--sage)}
+.fg textarea{resize:vertical;min-height:70px}
+.btn-primary{width:100%;padding:11px;background:var(--warm-d);color:#fff;border:none;border-radius:8px;font-family:'Jost',sans-serif;font-size:14px;cursor:pointer;-webkit-appearance:none}
+.btn-primary:hover{background:var(--warm)}
+.lerr{background:var(--red-l);border:0.5px solid var(--red);color:var(--red-d);padding:9px 12px;border-radius:8px;font-size:13px;margin-bottom:1rem}
+#app{display:none;-webkit-flex-direction:column;flex-direction:column;min-height:100vh}
+#app.visible{display:-webkit-flex;display:flex}
+.topbar{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between;padding:10px 18px;background:#fff;border-bottom:0.5px solid var(--bdr);-webkit-flex-shrink:0;flex-shrink:0}
+.topbar-brand{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--warm)}
+.topbar-brand em{font-style:normal;color:var(--sage);font-size:11px;font-family:'Jost',sans-serif;margin-left:10px;letter-spacing:.1em;text-transform:uppercase}
+.tr{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px}
+.rbadge{font-size:11px;padding:3px 10px;border-radius:99px;background:var(--sage-l);color:var(--sage-d)}
+.nbtn{background:none;border:none;cursor:pointer;color:var(--warm);font-size:19px;position:relative;padding:0;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center}
+.ndot{position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:var(--red);border:2px solid #fff;display:none}
+.avbtn{width:32px;height:32px;border-radius:50%;background:var(--sage-l);border:none;cursor:pointer;font-size:13px;font-weight:500;color:var(--sage-d);font-family:'Jost',sans-serif}
+.navbar{display:-webkit-flex;display:flex;background:#fff;border-bottom:0.5px solid var(--bdr);padding:0 18px;overflow-x:auto;-webkit-flex-shrink:0;flex-shrink:0;-webkit-overflow-scrolling:touch}
+.nbtn2{padding:10px 14px;font-size:12px;color:var(--warm);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:'Jost',sans-serif;white-space:nowrap;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:5px}
+.nbtn2:hover{color:var(--warm-d)}
+.nbtn2.active{color:var(--sage-d);border-bottom-color:var(--sage)}
+.pages{-webkit-flex:1;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.page{display:none;padding:1.25rem 1.5rem}
+.page.active{display:block}
+.card{background:#fff;border:0.5px solid var(--bdr);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem}
+.cl{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--warm);margin-bottom:10px}
+.g2{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:12px;margin-bottom:1rem}
+.g2 > *{-webkit-flex:1 1 140px;flex:1 1 140px}
+.g3{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:10px;margin-bottom:1rem}
+.g3 > *{-webkit-flex:1 1 100px;flex:1 1 100px}
+.fi label{display:block;font-size:12px;color:var(--warm);margin-bottom:4px}
+.fi input,.fi select,.fi textarea{width:100%;padding:7px 10px;border:0.5px solid var(--bdr);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:#fff;color:var(--warm-d);-webkit-appearance:none;appearance:none}
+.fi textarea{resize:vertical;min-height:60px}
+.fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--sage)}
+.btn{padding:7px 14px;border:0.5px solid var(--bdr);border-radius:7px;background:#fff;font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;color:var(--warm-d);display:-webkit-inline-flex;display:inline-flex;-webkit-align-items:center;align-items:center;gap:5px;-webkit-appearance:none}
+.btn:hover{background:var(--warm-l)}
+.bs{background:var(--sage-l);border-color:var(--sage);color:var(--sage-d)}.bs:hover{background:#dde9d8}
+.bd{background:var(--warm-d);color:#fff;border-color:var(--warm-d)}.bd:hover{background:var(--warm)}
+.bb{background:var(--blue-l);border-color:var(--blue);color:var(--blue-d)}
+.br{background:var(--red-l);border-color:var(--red);color:var(--red-d)}
+.ba{background:var(--amber-l);border-color:var(--amber);color:var(--amber-d)}
+.bfull{width:100%;-webkit-justify-content:center;justify-content:center;padding:10px}
+.tag{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;margin:2px;background:var(--warm-l);color:var(--warm-d)}
+.tg{background:var(--sage-l);color:var(--sage-d)}
+.tr2{background:var(--red-l);color:var(--red-d);border:0.5px solid var(--red)}
+.ta{background:var(--amber-l);color:var(--amber-d)}
+.tb{background:var(--blue-l);color:var(--blue-d)}
+.sbadge{display:-webkit-inline-flex;display:inline-flex;-webkit-align-items:center;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:500}
+.sd{background:var(--warm-l);color:var(--warm)}
+.sp{background:var(--amber-l);color:var(--amber-d)}
+.sa{background:var(--blue-l);color:var(--blue-d)}
+.ss{background:var(--sage-l);color:var(--sage-d)}
+.sr{background:#fbeaf0;color:#993556}
+.sc{background:var(--sage-l);color:var(--sage-d)}
+.empty{text-align:center;padding:2.5rem;color:var(--warm);font-size:13px}
+.cal-grid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap}
+.cal-hdr{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--warm);text-align:center;padding:5px 0;width:14.28%}
+.cal-day{background:#fff;border:0.5px solid var(--bdr);border-radius:7px;min-height:74px;padding:5px;cursor:pointer;width:14.28%;-webkit-box-sizing:border-box;box-sizing:border-box}
+.cal-day:hover{border-color:var(--sage)}
+.cal-day.today{border:1.5px solid var(--sage)}
+.cal-day.omo{opacity:.3}
+.cdnum{font-size:11px;font-weight:500;margin-bottom:3px}
+.cev{font-size:9px;padding:2px 4px;border-radius:3px;margin-bottom:2px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cev.cancelled{opacity:.5;text-decoration:line-through}
+.wf-steps{display:-webkit-flex;display:flex;margin-bottom:1.5rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.wfs{-webkit-flex:1;flex:1;min-width:70px;text-align:center;padding:10px 4px;border-top:3px solid var(--bdr)}
+.wfs.done{border-top-color:var(--sage)}
+.wfs.active{border-top-color:var(--blue)}
+.wfn{width:20px;height:20px;border-radius:50%;background:var(--bdr);display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:10px;font-weight:500;margin:0 auto 5px;color:var(--warm)}
+.wfs.done .wfn{background:var(--sage);color:#fff}
+.wfs.active .wfn{background:var(--blue);color:#fff}
+.wfl{font-size:10px;color:var(--warm);line-height:1.3}
+.ms{background:var(--cream);border:0.5px solid var(--bdr);border-radius:7px;padding:8px 10px;margin-bottom:6px}
+.ms.flagged{background:var(--red-l);border-color:var(--red)}
+.ms.drag-over{border:2px dashed var(--sage);background:var(--sage-l)}
+.pbadge{display:-webkit-inline-flex;display:inline-flex;-webkit-align-items:center;align-items:center;gap:3px;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:500}
+.pf{background:var(--sage-l);color:var(--sage-d)}
+.pg{background:var(--blue-l);color:var(--blue-d)}
+.pi{background:var(--amber-l);color:var(--amber-d)}
+.mtb{background:var(--amber-l);color:var(--amber-d)}
+.mtl{background:var(--blue-l);color:var(--blue-d)}
+.mtd{background:var(--sage-l);color:var(--sage-d)}
+.mts{background:#fbeaf0;color:#993556}
+.rot-shelf{background:var(--sage-l);border:0.5px solid var(--sage);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem}
+.rot-title{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--sage-d);margin-bottom:10px}
+.rot-card{background:#fff;border:0.5px solid var(--sage);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:-webkit-flex;display:flex;-webkit-align-items:flex-start;align-items:flex-start;-webkit-justify-content:space-between;justify-content:space-between;gap:8px}
+.avoid-shelf{background:var(--red-l);border:0.5px solid var(--red);border-radius:10px;padding:1rem 1.25rem;margin-bottom:1rem}
+.mgrid{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;gap:10px;margin-bottom:1rem}
+.mgrid > .mc{-webkit-flex:1 1 150px;flex:1 1 150px}
+.mc{background:#fff;border:0.5px solid var(--bdr);border-radius:10px;padding:12px}
+.mcav{width:34px;height:34px;border-radius:50%;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:13px;font-weight:500;color:#fff;margin-bottom:8px}
+.abanner{background:var(--red-l);border:0.5px solid var(--red);border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:var(--red-d);line-height:1.7}
+.cls{background:#fff;border:0.5px solid var(--bdr);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.clsh{display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;padding:11px 14px;background:var(--warm-l);cursor:pointer}
+.clpb{height:3px;background:var(--bdr)}
+.clpf{height:100%;background:var(--sage)}
+.clib{padding:6px 14px}
+.cli{display:-webkit-flex;display:flex;-webkit-align-items:flex-start;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--bdr)}
+.cli:last-child{border-bottom:none}
+.cli input[type=checkbox]{width:17px;height:17px;margin-top:2px;cursor:pointer;accent-color:var(--sage-d);-webkit-flex-shrink:0;flex-shrink:0}
+.clit{font-size:13px;line-height:1.5;-webkit-flex:1;flex:1}
+.clit.crit{color:var(--red-d);font-weight:500}
+.clin{font-size:11px;color:var(--warm);margin-top:3px}
+.opbar{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:0.5px solid var(--bdr);border-radius:10px;margin-bottom:1rem}
+.ai-ctx{background:var(--sage-l);border:0.5px solid var(--sage);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--sage-d);line-height:1.7}
+.aichat{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.aim{padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.65;max-width:90%}
+.aim.ai{background:#fff;border:0.5px solid var(--bdr)}
+.aim.ai.intro{background:var(--cream);border-color:var(--sage)}
+.aim.user{background:var(--sage-l);color:var(--sage-d);margin-left:auto;max-width:75%}
+.aim.flag{background:var(--red-l);border:0.5px solid var(--red);color:var(--red-d)}
+.aim.thinking{background:var(--warm-l);color:var(--warm);font-style:italic;border:0.5px dashed var(--bdr)}
+.aiinput{display:-webkit-flex;display:flex;gap:8px}
+.aiinput textarea{-webkit-flex:1;flex:1;padding:9px 12px;border:0.5px solid var(--bdr);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:#fff;resize:none;min-height:42px;max-height:100px;line-height:1.5;-webkit-appearance:none}
+.aiinput textarea:focus{outline:none;border-color:var(--sage)}
+.qpb{padding:5px 10px;border:0.5px solid var(--bdr);border-radius:99px;font-size:11px;cursor:pointer;background:#fff;color:var(--warm-d);font-family:'Jost',sans-serif;white-space:nowrap;-webkit-appearance:none}
+.qpb:hover{background:var(--sage-l);border-color:var(--sage);color:var(--sage-d)}
+.star{font-size:22px;cursor:pointer;color:#ddd;line-height:1}
+.star.on{color:var(--amber)}
+.thb{padding:6px 12px;border:0.5px solid var(--bdr);border-radius:7px;background:#fff;font-size:17px;cursor:pointer;-webkit-appearance:none}
+.thb.up{background:var(--sage-l);border-color:var(--sage)}
+.thb.dn{background:var(--red-l);border-color:var(--red)}
+.pb{padding:4px 10px;border:0.5px solid var(--bdr);border-radius:99px;font-size:12px;cursor:pointer;background:#fff;font-family:'Jost',sans-serif;-webkit-appearance:none}
+.pb.on{background:var(--sage-l);border-color:var(--sage);color:var(--sage-d)}
+.pb.on-no{background:var(--red-l);border-color:var(--red);color:var(--red-d)}
+.pb.on-tw{background:var(--amber-l);border-color:var(--amber);color:var(--amber-d)}
+.mthread{display:-webkit-flex;display:flex;-webkit-flex-direction:column;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;margin-bottom:10px;-webkit-overflow-scrolling:touch}
+.msg{padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.5;max-width:82%}
+.msg.me{background:var(--sage-l);color:var(--sage-d);margin-left:auto}
+.msg.them{background:#fff;border:0.5px solid var(--bdr)}
+.minput{display:-webkit-flex;display:flex;gap:8px}
+.minput input{-webkit-flex:1;flex:1;padding:9px 12px;border:0.5px solid var(--bdr);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;-webkit-appearance:none}
+.minput input:focus{outline:none;border-color:var(--sage)}
+.wstabs{display:-webkit-flex;display:flex;border-bottom:0.5px solid var(--bdr);background:#fff;padding:0 1.5rem;overflow-x:auto;margin:-1.25rem -1.5rem 1.25rem;-webkit-overflow-scrolling:touch}
+.wstab{padding:10px 13px;font-size:12px;color:var(--warm);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:'Jost',sans-serif;white-space:nowrap;-webkit-appearance:none}
+.wstab:hover{color:var(--warm-d)}
+.wstab.active{color:var(--sage-d);border-bottom-color:var(--sage)}
+.gst{font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--warm);margin:12px 0 6px;padding-bottom:4px;border-bottom:0.5px solid var(--bdr)}
+.gi{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;gap:10px;padding:6px 0;border-bottom:0.5px solid var(--bdr);font-size:13px}
+.gi:last-child{border-bottom:none}
+.gi input[type=checkbox]{width:15px;height:15px;accent-color:var(--sage-d)}
+.modal-ov{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:200;-webkit-align-items:flex-start;align-items:flex-start;-webkit-justify-content:center;justify-content:center;padding-top:40px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-ov.open{display:-webkit-flex;display:flex}
+.modal-box{background:#fff;border-radius:12px;padding:1.5rem;width:100%;max-width:380px;border:0.5px solid var(--bdr);margin:0 1rem 2rem}
+.modal-box h3{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin-bottom:1.25rem}
+.mlink{background:none;border:none;color:var(--sage-d);font-family:'Jost',sans-serif;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:.75rem;display:block;text-align:center;-webkit-appearance:none}
+.trow{display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:space-between;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--bdr)}
+.trow:last-child{border-bottom:none}
+.nitem{display:-webkit-flex;display:flex;-webkit-align-items:flex-start;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--bdr);cursor:pointer}
+.nitem:hover{background:var(--warm-l);margin:0 -1rem;padding:9px 1rem}
+.nitem:last-child{border-bottom:none}
+.nico{width:28px;height:28px;border-radius:50%;display:-webkit-flex;display:flex;-webkit-align-items:center;align-items:center;-webkit-justify-content:center;justify-content:center;font-size:13px;-webkit-flex-shrink:0;flex-shrink:0}
+.rec-tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;margin:2px;cursor:pointer;border:0.5px solid var(--bdr);background:#fff;color:var(--warm-d);font-family:'Jost',sans-serif}
+.rec-tag.on{background:var(--sage-l);border-color:var(--sage);color:var(--sage-d)}
+.day-col{background:#fff;border:0.5px solid var(--bdr);border-radius:8px;padding:8px;margin-bottom:8px;min-height:80px}
+.day-col.drag-over{border:2px dashed var(--sage);background:var(--sage-l)}
+</style>
+</head>
+<body>
+<div id="vlogin">
+<div class="login-wrap">
+  <div><div class="brand serif">Eddelbuttel Nutrition</div><div class="sub">The Nourished Table · Weekly Chef Services</div></div>
+  <div class="login-card">
+    <h2 class="serif">Sign in to The Table</h2>
+    <p>Enter your email and password to continue.</p>
+    <div id="lerr" class="lerr hidden">Incorrect email or password.</div>
+    <div class="fg"><label>Email address</label><input type="email" id="lemail" placeholder="you@example.com" autocomplete="email"></div>
+    <div class="fg"><label>Password</label><input type="password" id="lpw" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn-primary" id="sinbtn">Sign in</button>
+  </div>
+</div>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-brand serif">The Table <em>Eddelbuttel Nutrition</em></div>
+    <div class="tr">
+      <button class="nbtn" id="nbell" onclick="go('notifications')" aria-label="Notifications"><i class="ti ti-bell" style="font-size:19px"></i><div class="ndot" id="ndot"></div></button>
+      <span class="rbadge" id="rbadge">Chef</span>
+      <button class="avbtn" id="avbtn" onclick="signOut()" title="Sign out">B</button>
+    </div>
+  </div>
+  <div class="navbar" id="navbar"></div>
+  <div class="pages">
+    <div id="p-calendar" class="page"></div>
+    <div id="p-clients" class="page"></div>
+    <div id="p-workspace" class="page"></div>
+    <div id="p-ai" class="page"></div>
+    <div id="p-recipes" class="page"></div>
+    <div id="p-team" class="page"></div>
+    <div id="p-messages" class="page"></div>
+    <div id="p-notifications" class="page"></div>
+  </div>
+  <div class="modal-ov" id="mov"><div class="modal-box" id="mbox"></div></div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+var CFG = {
+  emailDietitian: 'brittany@eddelbuttel.com',
+  emailManager: 'brenda@eddelbuttel.com',
+  fromName: 'The Table — Eddelbuttel Nutrition',
+  appUrl: 'https://your-app.netlify.app'
+};
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+var DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var DAYSSHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var WDAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var CCOLORS = ['#c0dd97','#9FE1CB','#B5D4F4','#FAC775','#AFA9EC'];
+var MCOLORS = ['#5a6e50','#0c447c','#633806','#791f1f','#5a3e7a','#2d6e5a'];
+var MTYPES = ['Breakfast','Lunch','Dinner','Snack'];
+var PKGS = ['Family style','Grab & go','Individual portions'];
+var DIET_TAGS = ['Vegan','Vegetarian','Pescatarian','Gluten-free','Dairy-free','Nut-free','Egg-free','Kid-friendly'];
+var NAVCFG = {
+  dietitian: ['calendar','clients','workspace','ai','recipes','team','notifications'],
+  chef: ['calendar','clients','workspace','ai','recipes','notifications'],
+  manager: ['calendar','clients','messages','notifications'],
+  client: ['workspace','messages','notifications']
+};
+var NAVLBL = {calendar:'Calendar',clients:'Clients',workspace:'Menu & Workflow',ai:'AI Assistant',recipes:'Recipes',team:'Team & Roles',messages:'Messages',notifications:'Notifications'};
+var NAVICO = {calendar:'ti-calendar',clients:'ti-users',workspace:'ti-git-branch',ai:'ti-robot',recipes:'ti-book',team:'ti-settings',messages:'ti-message',notifications:'ti-bell'};
+
+// ── CHECKLIST DATA ────────────────────────────────────────────────────────────
+var CL = [
+  {s:'Pre-service — client profile review',items:[
+    {t:'Reviewed all allergies — confirmed no restricted ingredients in menu',c:true,n:'Zero tolerance. If unsure, contact manager immediately.'},
+    {t:'Spice tolerance confirmed',c:false},{t:'All dietary restrictions reviewed',c:false},
+    {t:'Food dislikes and flavor preferences reviewed',c:false},
+    {t:'Menu confirmed — no conflicts with client profile',c:false},
+    {t:'Special home instructions checked (entry, parking, pets, quiet hours)',c:false},
+    {t:'All ingredients sourced and confirmed',c:false},
+    {t:'Equipment packed if applicable',c:false},{t:'Manager and client contact info accessible',c:false}
+  ]},
+  {s:'During service',items:[
+    {t:'Cleaned as I went — no pile-up at the end',c:false},
+    {t:'Workspace kept organized throughout',c:false},
+    {t:'Spills wiped immediately',c:false},
+    {t:'Separate cutting boards for proteins and produce',c:false},
+    {t:'Hands washed before service, after raw proteins, after any interruption',c:false},
+    {t:'Tasted food with a clean spoon only',c:false},
+    {t:"Client's spice level followed exactly — no personal judgment overrides",c:true},
+    {t:'All client food preferences respected in every dish',c:true},
+    {t:'Did not use personal items without permission',c:false},
+    {t:'No personal phone calls during active service',c:false},
+    {t:'Any remaining protein cooked and used — nothing wasted',c:false,n:'Cook it and include in a dish.'},
+    {t:'Extra produce incorporated where it fit the menu',c:false,n:'Do not leave usable produce unused.'}
+  ]},
+  {s:'Equipment care',items:[
+    {t:'Non-stick pans: silicone, rubber, or wooden utensils only — NO metal ever',c:true},
+    {t:'Non-stick pans: avoided high heat',c:false},
+    {t:'Sheet pans lined with parchment for all roasting and baking',c:true},
+    {t:'Cast iron dried immediately — not soaked',c:false},
+    {t:'All equipment returned in same or better condition',c:false},
+    {t:'Any damage reported to manager same day',c:true}
+  ]},
+  {s:'Kitchen reset & storage',items:[
+    {t:'All dishes, pots, pans washed and completely dried',c:true},
+    {t:'NO wet or dirty items put away under any circumstances',c:true},
+    {t:'Countertops, stovetop, backsplash, sink fully wiped',c:false},
+    {t:'Kitchen floor swept or vacuumed',c:false},
+    {t:'Any oven spills cleaned before leaving',c:true},
+    {t:'All meals labeled with name, date, and reheating instructions',c:false},
+    {t:'Food stored neatly and organized in refrigerator',c:false},
+    {t:'Containers sealed properly — no leaks or loose lids',c:false},
+    {t:'Trash removed, tied off, taken to outdoor bins',c:false,n:'All the way outside — not left inside the home.'}
+  ]},
+  {s:'Final walk-through',items:[
+    {t:'Full walk-through completed before leaving',c:false},
+    {t:'Counters, stovetop, sink — clean and clear',c:false},
+    {t:'Floor swept, fridge organized, oven clean',c:false},
+    {t:'All equipment returned and completely dried',c:false},
+    {t:'No personal items left behind',c:false}
+  ]}
+];
+var CLTOTAL = 0;
+for (var _si = 0; _si < CL.length; _si++) { CLTOTAL += CL[_si].items.length; }
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+var S = {
+  role: 'chef', uid: 'u2', wsTab: 'profile', wsCid: 0,
+  aiH: {}, fbDraft: {}, recEdit: null, page: 'clients',
+  calYear: 2026, calMonth: 4,
+  recFilter: 'All', recTagFilter: []
+};
+
+// ── TEAM ──────────────────────────────────────────────────────────────────────
+var TEAM = [
+  {id:'u1',name:'Brittany Eddelbuttel',role:'dietitian',email:'brittany@eddelbuttel.com',password:'diet123',color:'#B5D4F4'},
+  {id:'u2',name:'Brandy Barnes',role:'chef',email:'brandyrbarnes0@gmail.com',password:'chef123',color:'#c0dd97'},
+  {id:'u3',name:'Riley Mills',role:'chef',email:'millsriley2020@gmail.com',password:'chef123',color:'#9FE1CB'},
+  {id:'u4',name:'Esther Brown',role:'chef',email:'estherbrow22@gmail.com',password:'chef123',color:'#AFA9EC'},
+  {id:'u5',name:'Brenda',role:'manager',email:'brenda@eddelbuttel.com',password:'mgr123',color:'#FAC775'}
+];
+
+var CLIENTS = [];
+var NOTIFS = [];
+
+// ── SHARED RECIPE BANK ────────────────────────────────────────────────────────
+var RECIPES = [];
+
+// ── DRAG STATE ────────────────────────────────────────────────────────────────
+var _dragMeal = null;
+var _dragDay = null;
+var _dragIdx = null;
+var _dragCid = null;
+var _modalEvs = [];
+var _pendingCid = null;
+var _pendingKey = null;
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function tu(id) {
+  for (var i = 0; i < TEAM.length; i++) { if (TEAM[i].id === id) return TEAM[i]; }
+  return null;
+}
+function gc(id) {
+  for (var i = 0; i < CLIENTS.length; i++) { if (CLIENTS[i].id === id) return CLIENTS[i]; }
+  return null;
+}
+function cn(id) { var u = tu(id); return u ? u.name : 'Unassigned'; }
+function cc(id) { var u = tu(id); return u ? u.color : '#c0dd97'; }
+function myC() {
+  if (S.role === 'client') {
+    var me = tu(S.uid);
+    var res = [];
+    for (var i = 0; i < CLIENTS.length; i++) { if (me && CLIENTS[i].id === me.clientId) res.push(CLIENTS[i]); }
+    return res;
+  }
+  if (S.role === 'chef') {
+    var r2 = [];
+    for (var i = 0; i < CLIENTS.length; i++) { if (CLIENTS[i].chefId === S.uid) r2.push(CLIENTS[i]); }
+    return r2;
+  }
+  return CLIENTS;
+}
+function fam(c) {
+  var m = {};
+  var members = c.familyMembers || [];
+  for (var i = 0; i < members.length; i++) {
+    var al = members[i].allergies || [];
+    for (var j = 0; j < al.length; j++) {
+      if (!m[al[j]]) m[al[j]] = [];
+      m[al[j]].push(members[i].name);
+    }
+  }
+  return m;
+}
+function famKeys(c) { var f = fam(c); var k = []; for (var key in f) { k.push(key); } return k; }
+function mtb(t) {
+  var cls = {Breakfast:'mtb',Lunch:'mtl',Dinner:'mtd',Snack:'mts'}[t] || 'mtd';
+  return '<span class="pbadge ' + cls + '">' + t + '</span>';
+}
+function pkb(p) {
+  var cls = {'Family style':'pf','Grab & go':'pg','Individual portions':'pi'}[p] || 'pf';
+  return '<span class="pbadge ' + cls + '">' + (p || '') + '</span>';
+}
+function sb(s) {
+  var m = {draft:['sd','Draft'],pending:['sp','Awaiting sign-off'],approved:['sa','Approved'],sent:['ss','Sent to client'],revised:['sr','Client revised'],complete:['sc','Complete']};
+  var pair = m[s] || ['sd','Draft'];
+  return '<span class="sbadge ' + pair[0] + '">' + pair[1] + '</span>';
+}
+function stars(n) {
+  var s = '';
+  for (var i = 1; i <= 5; i++) s += i <= n ? '★' : '☆';
+  return s;
+}
+function tod() { return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function nowt() { return new Date().toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}); }
+function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function updDot() {
+  var h = false;
+  for (var i = 0; i < NOTIFS.length; i++) {
+    var n = NOTIFS[i];
+    if (!n.unread) continue;
+    var inRoles = false; var inUsers = false;
+    for (var j = 0; j < n.forRoles.length; j++) { if (n.forRoles[j] === S.role) { inRoles = true; break; } }
+    for (var j = 0; j < n.forUsers.length; j++) { if (n.forUsers[j] === S.uid) { inUsers = true; break; } }
+    if (inRoles || inUsers) { h = true; break; }
+  }
+  $('ndot').style.display = h ? 'block' : 'none';
+}
+function emailTo(to, subj, body) {
+  var t = Array.isArray(to) ? to.join(',') : to;
+  window.location.href = 'mailto:' + t + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(body);
+}
+function addN(text, forRoles, forUsers, navTarget) {
+  if (!forUsers) forUsers = [];
+  NOTIFS.unshift({id: Date.now(), icon:'ti-bell', color:'#eef3eb', ic:'#5a6e50', text:text, time:'Just now', unread:true, forRoles:forRoles, forUsers:forUsers, navTarget:navTarget || null});
+  updDot();
+}
+function newClient(id) {
+  return {id:id,name:'',contact:'',chefId:'u2',serviceDay:1,menuDaysBefore:6,revisionDays:3,familyMembers:[],safe:'',aversions:'',notes:'',favoriteRestaurants:'',servicePlan:[],menuStatus:'draft',weeklyMeals:{Mon:[],Tue:[],Wed:[],Thu:[],Fri:[],Sat:[],Sun:[]},rotationBank:[],avoidBank:[],groceryList:[],messages:[],feedbackHistory:[],checklistHistory:[],serviceEvents:{}};
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+function doLogin() {
+  var e = $('lemail').value.trim().toLowerCase();
+  var p = $('lpw').value;
+  var u = null;
+  for (var i = 0; i < TEAM.length; i++) { if (TEAM[i].email.toLowerCase() === e && TEAM[i].password === p) { u = TEAM[i]; break; } }
+  if (!u) { $('lerr').classList.remove('hidden'); return; }
+  $('lerr').classList.add('hidden');
+  S.role = u.role; S.uid = u.id;
+  if (u.clientId) { S.wsCid = u.clientId; }
+  else if (CLIENTS.length > 0) { S.wsCid = CLIENTS[0].id; }
+  $('rbadge').textContent = {dietitian:'Dietitian',chef:'Chef',manager:'Manager',client:'Client'}[u.role] || u.role;
+  $('avbtn').textContent = u.name.charAt(0).toUpperCase();
+  $('avbtn').title = u.name + ' — click to sign out';
+  $('vlogin').classList.add('hidden');
+  $('app').classList.add('visible');
+  buildNav(); updDot();
+  var firstPage = NAVCFG[S.role] ? NAVCFG[S.role][0] : 'clients';
+  go(firstPage);
+}
+function signOut() { $('app').classList.remove('visible'); $('vlogin').classList.remove('hidden'); $('lemail').value = ''; $('lpw').value = ''; }
+$('sinbtn').addEventListener('click', doLogin);
+$('lpw').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
+$('lemail').addEventListener('keydown', function(e) { if (e.key === 'Enter') $('lpw').focus(); });
+
+// ── NAV ───────────────────────────────────────────────────────────────────────
+function buildNav() {
+  var pages = NAVCFG[S.role] || ['clients'];
+  var html = '';
+  for (var i = 0; i < pages.length; i++) {
+    var p = pages[i];
+    html += '<button class="nbtn2" id="nb-' + p + '" onclick="go(\'' + p + '\')"><i class="ti ' + NAVICO[p] + '" style="font-size:13px"></i>' + NAVLBL[p] + '</button>';
+  }
+  $('navbar').innerHTML = html;
+}
+function go(name) {
+  S.page = name;
+  var pages = document.querySelectorAll('.page');
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('active');
+  var btns = document.querySelectorAll('.nbtn2');
+  for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+  var pg = $('p-' + name); if (pg) pg.classList.add('active');
+  var nb = $('nb-' + name); if (nb) nb.classList.add('active');
+  var fns = {calendar:rCal,clients:rClients,workspace:rWS,ai:rAI,recipes:rRec,team:rTeam,messages:rMsgs,notifications:rNotif};
+  if (fns[name]) fns[name]();
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────────────
+function rCal() {
+  var yr = S.calYear, mo = S.calMonth;
+  var first = new Date(yr, mo, 1).getDay();
+  var dim = new Date(yr, mo + 1, 0).getDate();
+  var clients = myC();
+  var moNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var today = new Date(); var todayD = today.getDate(), todayM = today.getMonth(), todayY = today.getFullYear();
+
+  // Build event list per day
+  function getDayEvs(d) {
+    var dow = new Date(yr, mo, d).getDay();
+    var out = [];
+    for (var ci = 0; ci < clients.length; ci++) {
+      var c = clients[ci];
+      var key = yr + '-' + mo + '-' + d;
+      var se = c.serviceEvents || {};
+      var sev = se[key] || {status:'scheduled', chefId:c.chefId};
+      var canc = sev.status === 'cancelled';
+      var achef = sev.chefId || c.chefId;
+      var swapped = sev.chefId && sev.chefId !== c.chefId;
+      var n = c.name.replace('The ','').replace(' Family','');
+      var md = (c.serviceDay - (c.menuDaysBefore || 6) + 14) % 7;
+      if (dow === c.serviceDay) {
+        out.push({label:(canc?'[X] ':swapped?'[↔] ':'')+n, bg:canc?'#f7c1c1':cc(achef), tc:'#173404', canc:canc});
+      }
+      if (dow === md && !canc) {
+        out.push({label:n+': menu due', bg:'#b5d4f4', tc:'#0c447c'});
+      }
+      if (dow === 5 && (S.role === 'manager' || S.role === 'dietitian')) {
+        out.push({label:'Check-in: '+n, bg:'#f4c0d1', tc:'#72243e'});
+      }
+    }
+    return out.slice(0,3);
+  }
+
+  var cells = '';
+  var prevDim = new Date(yr, mo, 0).getDate();
+  for (var i = 0; i < first; i++) {
+    cells += '<div class="cal-day omo"><div class="cdnum" style="color:var(--bdr)">' + (prevDim - first + i + 1) + '</div></div>';
+  }
+  for (var d = 1; d <= dim; d++) {
+    var ev = getDayEvs(d);
+    var isToday = d === todayD && mo === todayM && yr === todayY;
+    var evHtml = '';
+    for (var ei = 0; ei < ev.length; ei++) {
+      evHtml += '<div class="cev' + (ev[ei].canc ? ' cancelled' : '') + '" style="background:' + ev[ei].bg + ';color:' + ev[ei].tc + '">' + ev[ei].label + '</div>';
+    }
+    cells += '<div class="cal-day' + (isToday ? ' today' : '') + '" onclick="dayModal(' + d + ')">' +
+      '<div class="cdnum">' + d + '</div>' + evHtml + '</div>';
+  }
+
+  var chefs = [];
+  for (var i = 0; i < TEAM.length; i++) { if (TEAM[i].role === 'chef' || TEAM[i].role === 'dietitian') chefs.push(TEAM[i]); }
+  var legendChefs = '';
+  if (S.role === 'dietitian' || S.role === 'manager') {
+    for (var i = 0; i < chefs.length; i++) {
+      legendChefs += '<span class="tag" style="background:' + chefs[i].color + ';color:#2c2c2a">' + chefs[i].name + '</span>';
+    }
+  }
+
+  $('p-calendar').innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">' +
+      '<div style="display:flex;align-items:center;gap:10px">' +
+        '<button class="btn" onclick="calNav(-1)" style="padding:5px 10px"><i class="ti ti-chevron-left"></i></button>' +
+        '<h2 class="serif" style="font-size:22px;font-weight:400;min-width:160px;text-align:center">' + moNames[mo] + ' ' + yr + '</h2>' +
+        '<button class="btn" onclick="calNav(1)" style="padding:5px 10px"><i class="ti ti-chevron-right"></i></button>' +
+      '</div>' +
+      (legendChefs ? '<div style="display:flex;gap:6px;flex-wrap:wrap">' + legendChefs + '</div>' : '') +
+    '</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;font-size:11px">' +
+      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#c0dd97;margin-right:3px"></span>Service</span>' +
+      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#b5d4f4;margin-right:3px"></span>Menu due</span>' +
+      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#f4c0d1;margin-right:3px"></span>Check-in</span>' +
+      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:#f7c1c1;border:0.5px solid var(--red);margin-right:3px"></span>Cancelled</span>' +
+    '</div>' +
+    '<div class="cal-grid">' +
+      (function(){ var h=''; for(var i=0;i<7;i++) h+='<div class="cal-hdr">'+DAYSSHORT[i]+'</div>'; return h; })() +
+      cells +
+    '</div>' +
+    '<div style="font-size:12px;color:var(--warm);margin-top:.75rem;text-align:center">Tap any day to manage · cancel service · swap chefs</div>';
+}
+
+function calNav(dir) { S.calMonth += dir; if (S.calMonth > 11) { S.calMonth = 0; S.calYear++; } if (S.calMonth < 0) { S.calMonth = 11; S.calYear--; } rCal(); }
+
+function dayModal(d) {
+  var yr = S.calYear, mo = S.calMonth;
+  var dow = new Date(yr, mo, d).getDay();
+  var clients = myC();
+  var canMgr = S.role === 'dietitian' || S.role === 'manager';
+  _modalEvs = [];
+  for (var ci = 0; ci < clients.length; ci++) {
+    var c = clients[ci];
+    var key = yr + '-' + mo + '-' + d;
+    var se = c.serviceEvents || {};
+    var sev = se[key] || {status:'scheduled', chefId:c.chefId};
+    var canc = sev.status === 'cancelled';
+    var achef = sev.chefId || c.chefId;
+    var swapped = sev.chefId && sev.chefId !== c.chefId;
+    var n = c.name.replace('The ','').replace(' Family','');
+    var md = (c.serviceDay - (c.menuDaysBefore || 6) + 14) % 7;
+    if (dow === c.serviceDay) _modalEvs.push({type:'service',c:c,key:key,canc:canc,achef:achef,swapped:swapped,n:n});
+    if (dow === md) _modalEvs.push({type:'menu',c:c,n:n});
+  }
+  if (!_modalEvs.length) { openM('<h3 class="serif">'+DAYS[dow]+', '+d+'</h3><div class="empty" style="padding:1rem">No events scheduled.</div><button class="mlink" onclick="closeM()">Close</button>'); return; }
+
+  var rows = '';
+  for (var i = 0; i < _modalEvs.length; i++) {
+    var ev = _modalEvs[i];
+    var alKeys = famKeys(ev.c);
+    if (ev.type === 'service') {
+      rows += '<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--bdr);gap:8px">' +
+        '<div>' +
+          '<div style="font-weight:500;font-size:13px">' + ev.n + ' — Service ' +
+            (ev.canc ? '<span class="tag tr2" style="font-size:10px">Cancelled</span>' : ev.swapped ? '<span class="tag ta" style="font-size:10px">Chef swapped</span>' : '') +
+          '</div>' +
+          '<div style="font-size:12px;color:var(--warm)">Chef: ' + cn(ev.achef) + (ev.swapped ? ' (covering for ' + cn(ev.c.chefId) + ')' : ' (regular)') + '</div>' +
+          (alKeys.length ? '<div style="margin-top:4px"><span class="tag tr2" style="font-size:10px"><i class="ti ti-alert-triangle" style="font-size:10px"></i> Allergies on file</span></div>' : '') +
+        '</div>' +
+        (canMgr ? '<div style="display:flex;flex-direction:column;gap:5px">' +
+          (!ev.canc
+            ? '<button class="btn br" style="font-size:11px;padding:4px 8px" onclick="doCancel(' + i + ')"><i class="ti ti-ban" style="font-size:11px"></i> Cancel</button>' +
+              '<button class="btn ba" style="font-size:11px;padding:4px 8px" onclick="doSwap(' + i + ')"><i class="ti ti-switch-horizontal" style="font-size:11px"></i> Swap chef</button>'
+            : '<button class="btn bs" style="font-size:11px;padding:4px 8px" onclick="doReinstate(' + i + ')"><i class="ti ti-refresh" style="font-size:11px"></i> Reinstate</button>') +
+        '</div>' : '') +
+      '</div>';
+    } else if (ev.type === 'menu') {
+      rows += '<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--bdr);gap:8px">' +
+        '<div><div style="font-weight:500;font-size:13px">' + ev.n + ' — Menu + grocery due</div><div style="font-size:12px;color:var(--warm)">Send to client and finalize grocery list today</div></div>' +
+        '<button class="btn bs" style="font-size:11px;padding:4px 8px" onclick="closeM();S.wsCid=' + ev.c.id + ';S.wsTab=\'menu\';go(\'workspace\')">Open <i class="ti ti-arrow-right" style="font-size:11px"></i></button>' +
+      '</div>';
+    }
+  }
+  openM('<h3 class="serif">' + DAYS[dow] + ' ' + d + '</h3>' + rows + '<button class="mlink" onclick="closeM()">Close</button>');
+}
+
+function doCancel(i) {
+  var ev = _modalEvs[i]; if (!ev) return;
+  var c = ev.c; var key = ev.key; var d = key.split('-')[2];
+  if (!c.serviceEvents) c.serviceEvents = {};
+  c.serviceEvents[key] = {status:'cancelled'};
+  addN('Service cancelled: ' + c.name + ' — ' + DAYS[new Date(S.calYear,S.calMonth,d).getDay()] + ' ' + d, ['dietitian','manager'], [], null);
+  closeM(); rCal();
+}
+function doReinstate(i) {
+  var ev = _modalEvs[i]; if (!ev) return;
+  var c = ev.c; var key = ev.key;
+  if (!c.serviceEvents) c.serviceEvents = {};
+  c.serviceEvents[key] = {status:'scheduled', chefId:c.chefId};
+  closeM(); rCal();
+}
+function doSwap(i) {
+  var ev = _modalEvs[i]; if (!ev) return;
+  _pendingCid = ev.c.id; _pendingKey = ev.key;
+  var c = ev.c; var d = ev.key.split('-')[2];
+  var se = c.serviceEvents || {};
+  var sev = se[ev.key] || {chefId:c.chefId};
+  var curChef = sev.chefId || c.chefId;
+  var chefs = []; for (var j = 0; j < TEAM.length; j++) { if (TEAM[j].role==='chef'||TEAM[j].role==='dietitian') chefs.push(TEAM[j]); }
+  var opts = ''; for (var j = 0; j < chefs.length; j++) { opts += '<option value="'+chefs[j].id+'"'+(chefs[j].id===curChef?' selected':'')+'>'+chefs[j].name+(chefs[j].id===c.chefId?' — regular chef':'')+'</option>'; }
+  var n = c.name.replace('The ','').replace(' Family','');
+  openM('<h3 class="serif">Swap chef — ' + n + '</h3>' +
+    '<div style="background:var(--amber-l);border:0.5px solid var(--amber);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--amber-d);margin-bottom:1rem;line-height:1.6">' +
+      '<strong>Only affects this one date.</strong> Regular assignment (' + cn(c.chefId) + ') stays the same. Brittany, Brenda, and both chefs will be notified.' +
+    '</div>' +
+    '<div class="fg"><label>Substitute chef</label><select id="sw-ch">' + opts + '</select></div>' +
+    '<div class="fg"><label>Reason (optional)</label><input id="sw-re" placeholder="e.g. Brandy is unavailable"></div>' +
+    '<button class="btn bd bfull" onclick="saveSwap()">Confirm swap</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function saveSwap() {
+  var cid = _pendingCid; var key = _pendingKey;
+  var c = gc(cid); if (!c) return;
+  if (!c.serviceEvents) c.serviceEvents = {};
+  var nch = $('sw-ch').value; var re = $('sw-re').value; var d = key.split('-')[2];
+  c.serviceEvents[key] = {status:'scheduled', chefId:nch, swapReason:re, originalChefId:c.chefId};
+  var msg = 'Chef swap ' + d + ': ' + cn(nch) + ' covering ' + c.name + (re ? ' — ' + re : '');
+  addN(msg, ['dietitian','manager'], [c.chefId, nch], {page:'calendar'});
+  emailTo([CFG.emailDietitian, CFG.emailManager], 'Chef swap — ' + c.name,
+    'Chef swap confirmed.\n\nDate: ' + d + '\nOriginal chef: ' + cn(c.chefId) + '\nSubstitute: ' + cn(nch) + '\n' + (re ? 'Reason: ' + re + '\n' : '') + '\n' + CFG.fromName);
+  closeM(); rCal();
+}
+
+// ── CLIENTS ───────────────────────────────────────────────────────────────────
+function rClients() {
+  var cl = (S.role === 'dietitian' || S.role === 'manager') ? CLIENTS : myC();
+  var canAdd = S.role === 'dietitian' || S.role === 'manager';
+  var h = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">' +
+    '<h2 class="serif" style="font-size:22px;font-weight:400">Clients</h2>' +
+    (canAdd ? '<button class="btn bs" onclick="addClientM()"><i class="ti ti-plus" style="font-size:13px"></i> Add client</button>' : '') +
+    '</div>';
+  if (!cl.length) { h += '<div class="empty">No clients yet. Add your first client to get started.</div>'; }
+  else {
+    for (var i = 0; i < cl.length; i++) {
+      var c = cl[i];
+      var alKeys = famKeys(c); var alc = alKeys.length;
+      var lf = c.feedbackHistory && c.feedbackHistory.length ? c.feedbackHistory[0] : null;
+      var members = c.familyMembers || [];
+      var memHtml = '';
+      for (var j = 0; j < members.length; j++) {
+        var m = members[j];
+        var hasAl = m.allergies && m.allergies.length;
+        memHtml += '<div style="display:flex;align-items:center;gap:4px;background:var(--warm-l);border-radius:6px;padding:3px 7px">' +
+          '<div style="width:16px;height:16px;border-radius:50%;background:' + MCOLORS[j % MCOLORS.length] + ';display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;color:#fff">' + m.name.charAt(0) + '</div>' +
+          '<span style="font-size:11px">' + m.name + (hasAl ? ' ⚠' : '') + '</span></div>';
+      }
+      h += '<div class="card" style="cursor:pointer" onclick="openWS(' + c.id + ')">' +
+        '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<div style="width:36px;height:36px;border-radius:50%;background:' + cc(c.chefId) + ';display:flex;align-items:center;justify-content:center;font-weight:500;font-size:14px;color:#173404">' + c.contact.charAt(0) + '</div>' +
+            '<div><div style="font-weight:500">' + c.name + '</div><div style="font-size:12px;color:var(--warm)">' + c.contact + ' · ' + DAYS[c.serviceDay] + 's · Chef: ' + cn(c.chefId) + '</div></div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:center;gap:6px">' + sb(c.menuStatus) + (lf ? '<span style="font-size:12px;color:var(--amber)">★' + lf.overallRating + '/5</span>' : '') +
+            (S.role === 'dietitian' ? '<button class="btn" style="padding:4px 8px;font-size:11px" onclick="event.stopPropagation();editClientM(' + c.id + ')"><i class="ti ti-edit"></i></button>' +
+              '<button class="btn br" style="padding:4px 8px;font-size:11px" onclick="event.stopPropagation();delClient(' + c.id + ')"><i class="ti ti-trash"></i></button>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center">' +
+          (alc ? '<span class="tag tr2" style="font-size:11px"><i class="ti ti-alert-triangle" style="font-size:10px"></i> ' + alc + ' allerg' + (alc > 1 ? 'ies' : 'y') + '</span>' : '<span class="tag tg" style="font-size:11px">No allergies</span>') +
+          memHtml +
+          '<button class="btn bs" style="padding:4px 10px;font-size:11px;margin-left:auto" onclick="event.stopPropagation();openWS(' + c.id + ')">Open <i class="ti ti-arrow-right" style="font-size:11px"></i></button>' +
+        '</div>' +
+      '</div>';
+    }
+  }
+  $('p-clients').innerHTML = h;
+}
+function openWS(id) { S.wsCid = id; S.wsTab = 'profile'; go('workspace'); }
+function delClient(id) {
+  if (!confirm('Delete this client?')) return;
+  var idx = -1; for (var i = 0; i < CLIENTS.length; i++) { if (CLIENTS[i].id === id) { idx = i; break; } }
+  if (idx > -1) CLIENTS.splice(idx, 1);
+  var newTeam = []; for (var i = 0; i < TEAM.length; i++) { if (TEAM[i].clientId !== id) newTeam.push(TEAM[i]); }
+  TEAM = newTeam;
+  rClients();
+}
+function addClientM() {
+  var chefs = []; for (var i = 0; i < TEAM.length; i++) { if (TEAM[i].role==='chef'||TEAM[i].role==='dietitian') chefs.push(TEAM[i]); }
+  var copts = ''; for (var i = 0; i < chefs.length; i++) { copts += '<option value="'+chefs[i].id+'">'+chefs[i].name+'</option>'; }
+  var dopts = ''; for (var i = 0; i < DAYS.length; i++) { dopts += '<option value="'+i+'">'+DAYS[i]+'</option>'; }
+  openM('<h3 class="serif">Add new client</h3>' +
+    '<div class="fg"><label>Family name</label><input id="nc-n" placeholder="e.g. The Smith Family"></div>' +
+    '<div class="fg"><label>Primary contact</label><input id="nc-c" placeholder="e.g. Jane Smith"></div>' +
+    '<div class="fg"><label>Assign chef</label><select id="nc-ch">' + copts + '</select></div>' +
+    '<div class="fg"><label>Service day</label><select id="nc-d">' + dopts + '</select></div>' +
+    '<div style="border-top:0.5px solid var(--bdr);margin:1rem 0;padding-top:1rem"><div class="cl">Client login credentials</div></div>' +
+    '<div class="fg"><label>Client email</label><input id="nc-e" type="email" placeholder="client@email.com"></div>' +
+    '<div class="fg"><label>Temporary password</label><input id="nc-p" type="password" placeholder="They can change this later"></div>' +
+    '<button class="btn bd bfull" onclick="saveNewClient()">Add client</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function saveNewClient() {
+  var n = $('nc-n').value.trim(); var ct = $('nc-c').value.trim();
+  if (!n || !ct) { alert('Name and contact required.'); return; }
+  var id = Date.now();
+  var c = newClient(id);
+  c.name = n; c.contact = ct;
+  c.chefId = $('nc-ch').value;
+  c.serviceDay = parseInt($('nc-d').value);
+  CLIENTS.push(c);
+  var e = $('nc-e').value.trim().toLowerCase();
+  var p = $('nc-p').value;
+  if (e && p) {
+    TEAM.push({id:'u'+Date.now(), name:ct, role:'client', email:e, password:p, color:'#F4C0D1', clientId:id});
+    // Welcome email
+    emailTo(e, 'Welcome to The Table — Eddelbuttel Nutrition',
+      'Hi ' + ct + ',\n\nYour personal client portal is ready!\n\n' +
+      '🔗 App: ' + CFG.appUrl + '\n' +
+      '📧 Email: ' + e + '\n' +
+      '🔑 Password: ' + p + '\n\n' +
+      'Through your portal you can view your weekly menu and grocery list, request changes, leave feedback for your chef, and message us directly.\n\n' +
+      'Welcome to The Table!\n' + CFG.fromName);
+  }
+  closeM(); rClients();
+}
+function editClientM(id) {
+  var c = gc(id); if (!c) return;
+  var chefs = []; for (var i = 0; i < TEAM.length; i++) { if (TEAM[i].role==='chef'||TEAM[i].role==='dietitian') chefs.push(TEAM[i]); }
+  var copts = ''; for (var i = 0; i < chefs.length; i++) { copts += '<option value="'+chefs[i].id+'"'+(chefs[i].id===c.chefId?' selected':'')+'>'+chefs[i].name+'</option>'; }
+  var dopts = ''; for (var i = 0; i < DAYS.length; i++) { dopts += '<option value="'+i+'"'+(i===c.serviceDay?' selected':'')+'>'+DAYS[i]+'</option>'; }
+  openM('<h3 class="serif">Edit ' + esc(c.name) + '</h3>' +
+    '<div class="fg"><label>Family name</label><input id="ec-n" value="'+esc(c.name)+'"></div>' +
+    '<div class="fg"><label>Contact</label><input id="ec-c" value="'+esc(c.contact)+'"></div>' +
+    '<div class="fg"><label>Chef</label><select id="ec-ch">'+copts+'</select></div>' +
+    '<div class="fg"><label>Service day</label><select id="ec-d">'+dopts+'</select></div>' +
+    '<div class="fg"><label>Safe foods</label><input id="ec-sf" value="'+esc(c.safe||'')+'"></div>' +
+    '<div class="fg"><label>Aversions</label><input id="ec-av" value="'+esc(c.aversions||'')+'"></div>' +
+    '<div class="fg"><label>Chef notes</label><input id="ec-no" value="'+esc(c.notes||'')+'"></div>' +
+    '<button class="btn bd bfull" onclick="saveEditClient('+id+')">Save</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function saveEditClient(id) {
+  var c = gc(id); if (!c) return;
+  c.name = $('ec-n').value; c.contact = $('ec-c').value; c.chefId = $('ec-ch').value;
+  c.serviceDay = parseInt($('ec-d').value); c.safe = $('ec-sf').value; c.aversions = $('ec-av').value; c.notes = $('ec-no').value;
+  closeM(); rClients();
+}
+
+// ── WORKSPACE ─────────────────────────────────────────────────────────────────
+function rWS() {
+  var c = gc(S.wsCid);
+  if (!c) { $('p-workspace').innerHTML = '<div class="empty">Select a client to get started.</div>'; return; }
+  var cl = myC();
+  var allTabs = [
+    {id:'profile',label:'Family profile',icon:'ti-users'},
+    {id:'menu',label:'Menu & grocery',icon:'ti-clipboard-list'},
+    {id:'feedback',label:'Feedback',icon:'ti-star'},
+    {id:'messages',label:'Messages',icon:'ti-message'},
+    {id:'checklist',label:'Service checklist',icon:'ti-checklist'},
+    {id:'cl-history',label:'Checklist history',icon:'ti-history'}
+  ];
+  var vtabs = S.role === 'client' ? allTabs.slice(0,4) : allTabs;
+  var tabBar = '<div class="wstabs">';
+  for (var i = 0; i < vtabs.length; i++) {
+    tabBar += '<button class="wstab' + (S.wsTab === vtabs[i].id ? ' active' : '') + '" onclick="swTab(\'' + vtabs[i].id + '\')">' +
+      '<i class="ti ' + vtabs[i].icon + '" style="font-size:12px"></i> ' + vtabs[i].label + '</button>';
+  }
+  tabBar += '</div>';
+  var picker = '';
+  if (cl.length > 1 && S.role !== 'client') {
+    picker = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem">';
+    for (var i = 0; i < cl.length; i++) {
+      var x = cl[i];
+      picker += '<button class="btn' + (x.id === c.id ? ' bs' : '') + '" onclick="S.wsCid=' + x.id + ';S.wsTab=\'profile\';rWS()">' + x.name.replace('The ','').replace(' Family','') + '</button>';
+    }
+    picker += '</div>';
+  }
+  var body = '';
+  if (S.wsTab === 'profile') body = rProfile(c);
+  else if (S.wsTab === 'menu') body = rMenu(c);
+  else if (S.wsTab === 'feedback') body = rFeedback(c);
+  else if (S.wsTab === 'messages') body = rMsgTab(c);
+  else if (S.wsTab === 'checklist') body = rChecklist(c);
+  else if (S.wsTab === 'cl-history') body = rCLHistory(c);
+  $('p-workspace').innerHTML =
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">' +
+      '<button class="btn" onclick="go(\'clients\')"><i class="ti ti-arrow-left" style="font-size:13px"></i> All clients</button>' +
+      '<h2 class="serif" style="font-size:20px;font-weight:400">' + esc(c.name) + '</h2>' +
+    '</div>' + picker + tabBar + body;
+  if (S.wsTab === 'checklist') updCL();
+  if (S.wsTab === 'messages') { setTimeout(function(){ var t=$('mthread'); if(t) t.scrollTop=t.scrollHeight; }, 50); }
+}
+function swTab(t) { S.wsTab = t; rWS(); }
+
+// ── FAMILY PROFILE ────────────────────────────────────────────────────────────
+function rProfile(c) {
+  var alKeys = famKeys(c);
+  var canEdit = S.role === 'dietitian' || S.role === 'manager';
+  var al = fam(c);
+  var alBanner = alKeys.length
+    ? '<div class="abanner"><i class="ti ti-alert-triangle" style="font-size:14px;margin-right:6px"></i><strong>Allergies in this family:</strong> ' +
+        (function(){ var s=''; for(var i=0;i<alKeys.length;i++){ if(i) s+=' &nbsp;·&nbsp; '; s+='<strong>'+alKeys[i]+'</strong> — '+al[alKeys[i]].join(', '); } return s; })() + '</div>'
+    : '<div style="background:var(--sage-l);border:0.5px solid var(--sage);border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:var(--sage-d)"><i class="ti ti-check" style="font-size:13px;margin-right:6px"></i>No allergies on file.</div>';
+
+  var members = c.familyMembers || [];
+  var mcards = '';
+  for (var i = 0; i < members.length; i++) {
+    var m = members[i];
+    var isChild = m.role === 'child';
+    var malHtml = '';
+    if (m.allergies && m.allergies.length) {
+      for (var j = 0; j < m.allergies.length; j++) malHtml += '<span class="tag tr2" style="font-size:11px"><i class="ti ti-alert-triangle" style="font-size:10px"></i> '+m.allergies[j]+'</span>';
+    } else { malHtml = '<span class="tag tg" style="font-size:11px"><i class="ti ti-check" style="font-size:10px"></i> No allergies</span>'; }
+    mcards += '<div class="mc">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<div class="mcav" style="background:'+MCOLORS[i%MCOLORS.length]+'">'+m.name.charAt(0)+'</div>' +
+          '<div><div style="font-weight:500;font-size:14px">'+esc(m.name)+'</div>' +
+          '<div style="font-size:12px;color:var(--warm)">'+(isChild ? 'Child · Age ' + (m.age||'—') : 'Adult')+'</div></div>' +
+        '</div>' +
+        (canEdit ? '<button class="btn" style="padding:3px 7px;font-size:10px" onclick="editMemM('+c.id+',\''+m.id+'\')"><i class="ti ti-edit" style="font-size:10px"></i></button>' : '') +
+      '</div>' + malHtml +
+      (m.notes ? '<div style="font-size:11px;color:var(--warm);font-style:italic;margin-top:6px">'+esc(m.notes)+'</div>' : '') +
+    '</div>';
+  }
+
+  var spHtml = '';
+  var sp = c.servicePlan || [];
+  if (sp.length) {
+    for (var i = 0; i < sp.length; i++) {
+      spHtml += '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--bdr);flex-wrap:wrap;font-size:13px">'+mtb(sp[i].mealType)+'<strong>'+sp[i].qty+'x/week</strong><span style="color:var(--warm)">'+sp[i].who+' · '+sp[i].servings+' serv</span>'+pkb(sp[i].packaging)+(sp[i].notes?'<span style="font-size:11px;color:var(--warm);font-style:italic">'+esc(sp[i].notes)+'</span>':'')+'</div>';
+    }
+  } else { spHtml = '<p style="font-size:13px;color:var(--warm)">No service plan set.</p>'; }
+
+  return alBanner +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">' +
+      '<div class="cl" style="margin:0">Family members</div>' +
+      (canEdit ? '<button class="btn bs" style="font-size:11px;padding:4px 10px" onclick="addMemM('+c.id+')"><i class="ti ti-plus" style="font-size:11px"></i> Add member</button>' : '') +
+    '</div>' +
+    '<div class="mgrid">' + (mcards || '<p style="font-size:13px;color:var(--warm)">No members yet.</p>') + '</div>' +
+    '<div class="card"><div class="cl">Household preferences</div>' +
+      '<div class="g2"><div><div style="font-size:11px;color:var(--warm);margin-bottom:3px">Safe foods</div><div style="font-size:13px">'+(c.safe||'—')+'</div></div>' +
+      '<div><div style="font-size:11px;color:var(--warm);margin-bottom:3px">Aversions</div><div style="font-size:13px">'+(c.aversions||'—')+'</div></div></div>' +
+      '<div><div style="font-size:11px;color:var(--warm);margin-bottom:3px">Chef notes</div><div style="font-size:13px">'+(c.notes||'—')+'</div></div>' +
+      (c.favoriteRestaurants ? '<div style="margin-top:8px"><div style="font-size:11px;color:var(--warm);margin-bottom:3px">Favorite restaurants</div><div style="font-size:13px">'+esc(c.favoriteRestaurants)+'</div></div>' : '') +
+    '</div>' +
+    '<div class="card"><div class="cl">Weekly service plan</div>' + spHtml + '</div>' +
+    (c.rotationBank && c.rotationBank.length ? '<div class="card"><div class="cl">Rotation bank — client approved</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+(function(){ var s=''; for(var i=0;i<c.rotationBank.length;i++) s+='<span class="tag tg">✓ '+esc(c.rotationBank[i].name)+'</span>'; return s; })()+'</div></div>' : '') +
+    (c.avoidBank && c.avoidBank.length ? '<div class="card"><div class="cl">Do not repeat</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+(function(){ var s=''; for(var i=0;i<c.avoidBank.length;i++) s+='<span class="tag tr2">✗ '+esc(c.avoidBank[i].name)+'</span>'; return s; })()+'</div></div>' : '');
+}
+
+function addMemM(cid) {
+  openM('<h3 class="serif">Add family member</h3>' +
+    '<div class="fg"><label>Full name</label><input id="nm-n" placeholder="e.g. Sarah, Tom, Lily"></div>' +
+    '<div class="g2"><div class="fg"><label>Role</label><select id="nm-r"><option value="adult">Adult</option><option value="child">Child</option></select></div>' +
+    '<div class="fg"><label>Age (kids only)</label><input id="nm-a" type="number" min="0" max="17" placeholder="e.g. 8"></div></div>' +
+    '<div class="fg"><label>Allergies (comma-separated, blank if none)</label><input id="nm-al" placeholder="e.g. Gluten, Tree nuts"></div>' +
+    '<div class="fg"><label>Notes</label><input id="nm-no" placeholder="e.g. Very picky, loves bold flavors"></div>' +
+    '<button class="btn bd bfull" onclick="saveMem('+cid+')">Add member</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function saveMem(cid) {
+  var n = $('nm-n').value.trim(); if (!n) { alert('Name required.'); return; }
+  var c = gc(cid); if (!c) return;
+  if (!c.familyMembers) c.familyMembers = [];
+  var role = $('nm-r').value;
+  var age = role === 'child' ? $('nm-a').value : '';
+  var alRaw = $('nm-al').value.split(',');
+  var al = []; for (var i = 0; i < alRaw.length; i++) { var t = alRaw[i].trim(); if (t) al.push(t); }
+  c.familyMembers.push({id:'fm'+Date.now(), name:n, role:role, age:age, allergies:al, notes:$('nm-no').value});
+  closeM(); rWS();
+}
+function editMemM(cid, mid) {
+  var c = gc(cid); var m = null;
+  if (c && c.familyMembers) { for (var i=0;i<c.familyMembers.length;i++) { if (c.familyMembers[i].id===mid) { m=c.familyMembers[i]; break; } } }
+  if (!m) return;
+  var isChild = m.role === 'child';
+  openM('<h3 class="serif">Edit ' + esc(m.name) + '</h3>' +
+    '<div class="fg"><label>Full name</label><input id="em-n" value="'+esc(m.name)+'"></div>' +
+    '<div class="g2"><div class="fg"><label>Role</label><select id="em-r" onchange="toggleAgeField(this.value)"><option value="adult"'+(m.role==='adult'?' selected':'')+'>Adult</option><option value="child"'+(m.role==='child'?' selected':'')+'>Child</option></select></div>' +
+    '<div class="fg" id="age-field" style="'+(isChild?'':'display:none')+'"><label>Age</label><input id="em-a" type="number" value="'+(m.age||'')+'"></div></div>' +
+    '<div class="fg"><label>Allergies (comma-separated)</label><input id="em-al" value="'+(m.allergies||[]).join(', ')+'"></div>' +
+    '<div class="fg"><label>Notes</label><input id="em-no" value="'+esc(m.notes||'')+'"></div>' +
+    '<button class="btn bd bfull" onclick="saveEditMem('+cid+',\''+mid+'\')">Save</button>' +
+    '<button class="btn br bfull" style="margin-top:6px" onclick="delMem('+cid+',\''+mid+'\')">Remove from family</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function toggleAgeField(v) { var f=$('age-field'); if(f) f.style.display = v==='child'?'':'none'; }
+function saveEditMem(cid, mid) {
+  var c = gc(cid); var m = null;
+  if (c && c.familyMembers) { for(var i=0;i<c.familyMembers.length;i++) { if(c.familyMembers[i].id===mid) { m=c.familyMembers[i]; break; } } }
+  if (!m) return;
+  m.name = $('em-n').value; m.role = $('em-r').value;
+  m.age = m.role === 'child' ? ($('em-a').value || '') : '';
+  var alRaw = $('em-al').value.split(','); m.allergies = [];
+  for (var i=0;i<alRaw.length;i++) { var t=alRaw[i].trim(); if(t) m.allergies.push(t); }
+  m.notes = $('em-no').value;
+  closeM(); rWS();
+}
+function delMem(cid, mid) {
+  if (!confirm('Remove this family member?')) return;
+  var c = gc(cid); if (!c || !c.familyMembers) return;
+  var nf = []; for(var i=0;i<c.familyMembers.length;i++) { if(c.familyMembers[i].id!==mid) nf.push(c.familyMembers[i]); }
+  c.familyMembers = nf;
+  closeM(); rWS();
+}
+
+// ── MENU WORKFLOW ─────────────────────────────────────────────────────────────
+function rMenu(c) {
+  var statuses = ['pending','approved','sent','revised','complete'];
+  var steps = [
+    {l:'Build menu', done: statuses.indexOf(c.menuStatus) >= 0, act: c.menuStatus==='draft'},
+    {l:'Dietitian OK', done: ['approved','sent','revised','complete'].indexOf(c.menuStatus)>=0, act: c.menuStatus==='pending'},
+    {l:'Send to client', done: ['sent','revised','complete'].indexOf(c.menuStatus)>=0, act: c.menuStatus==='approved'},
+    {l:'Client revises', done: c.menuStatus==='complete', act: c.menuStatus==='sent'||c.menuStatus==='revised'},
+    {l:'Service', done: false, act: c.menuStatus==='complete'}
+  ];
+  var stepsHtml = '<div class="wf-steps">';
+  for (var i=0;i<steps.length;i++) {
+    stepsHtml += '<div class="wfs '+(steps[i].done?'done':steps[i].act?'active':'')+'"><div class="wfn">'+(steps[i].done?'<i class="ti ti-check" style="font-size:10px"></i>':(i+1))+'</div><div class="wfl">'+steps[i].l+'</div></div>';
+  }
+  stepsHtml += '</div>';
+
+  var acts = '';
+  if (c.menuStatus==='draft' && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bb" onclick="wfAct(\'pending\','+c.id+')">Submit for sign-off</button>';
+  if (c.menuStatus==='pending' && S.role==='dietitian') acts += '<button class="btn bs" onclick="wfAct(\'approved\','+c.id+')"><i class="ti ti-check"></i> Approve</button><button class="btn br" onclick="wfAct(\'draft\','+c.id+')">Send back</button>';
+  if (c.menuStatus==='approved' && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bd" onclick="wfAct(\'sent\','+c.id+')">Send menu + grocery to client</button>';
+  if ((c.menuStatus==='sent'||c.menuStatus==='revised') && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bs" onclick="wfAct(\'complete\','+c.id+')">Finalize</button>';
+
+  // Rotation shelf
+  var rotShelf = '';
+  if ((S.role==='chef'||S.role==='dietitian') && c.rotationBank && c.rotationBank.length) {
+    rotShelf = '<div class="rot-shelf"><div class="rot-title"><i class="ti ti-bookmark" style="font-size:13px;margin-right:5px"></i>Client rotation — approved meals</div>';
+    for (var i=0;i<c.rotationBank.length;i++) {
+      var rm = c.rotationBank[i];
+      rotShelf += '<div class="rot-card"><div style="flex:1"><div style="font-weight:500;font-size:13px">'+esc(rm.name)+'</div>' +
+        '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px">'+mtb(rm.mealType||'Dinner')+'<span style="color:var(--amber);font-size:12px">'+stars(rm.stars||0)+'</span>' +
+        '<span class="tag '+(rm.repeat==='Yes'?'tg':rm.repeat==='No'?'tr2':'ta')+'" style="font-size:10px">'+esc(rm.repeat||'')+'</span></div>' +
+        (rm.note?'<div style="font-size:11px;color:var(--warm);font-style:italic;margin-top:3px">"'+esc(rm.note)+'"</div>':'') +
+        '</div><button class="btn bs" style="font-size:11px;padding:4px 8px;flex-shrink:0" onclick="addRotToMenu(\''+esc(rm.name)+'\','+c.id+')"><i class="ti ti-plus" style="font-size:11px"></i> Add</button></div>';
+    }
+    rotShelf += '</div>';
+  }
+
+  // Avoid shelf
+  var avoidShelf = '';
+  if ((S.role==='chef'||S.role==='dietitian') && c.avoidBank && c.avoidBank.length) {
+    avoidShelf = '<div class="avoid-shelf"><div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--red-d);margin-bottom:8px"><i class="ti ti-ban" style="font-size:13px;margin-right:5px"></i>Don\'t repeat — client flagged</div>';
+    for (var i=0;i<c.avoidBank.length;i++) {
+      var am = c.avoidBank[i];
+      avoidShelf += '<div style="padding:6px 0;border-bottom:0.5px solid #f0c0c0;font-size:13px"><strong>'+esc(am.name)+'</strong>'+(am.note?' — <span style="font-style:italic;color:var(--red-d)">"'+esc(am.note)+'"</span>':'')+'</div>';
+    }
+    avoidShelf += '</div>';
+  }
+
+  // Client edit banner
+  var clientBanner = '';
+  if (S.role==='client' && (c.menuStatus==='sent'||c.menuStatus==='revised')) {
+    clientBanner = '<div style="background:var(--sage-l);border:0.5px solid var(--sage);border-radius:8px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:var(--sage-d)">' +
+      '<i class="ti ti-edit" style="font-size:13px;margin-right:6px"></i><strong>You can edit this week\'s menu.</strong> Tap <strong>Edit</strong> on any meal to change it, or <strong>Remove</strong> to take it off. Changes go to your chef automatically.</div>';
+  }
+
+  // Weekly meals grid with drag support
+  var mgrid = '';
+  for (var di=0; di<WDAYS.length; di++) {
+    var day = WDAYS[di];
+    var meals = (c.weeklyMeals || {})[day] || [];
+    mgrid += '<div class="day-col" id="dc-'+day+'" ondragover="event.preventDefault();this.classList.add(\'drag-over\')" ondragleave="this.classList.remove(\'drag-over\')" ondrop="dropMeal(event,\''+day+'\','+c.id+')">' +
+      '<div style="font-size:11px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--warm-d);margin-bottom:8px">'+day+'</div>';
+    for (var mi=0; mi<meals.length; mi++) {
+      var m = meals[mi];
+      var flagged = false;
+      if (c.avoidBank) { for(var ai=0;ai<c.avoidBank.length;ai++) { if(c.avoidBank[ai].name.toLowerCase()===m.name.toLowerCase()) { flagged=true; break; } } }
+      var clientCanEdit = S.role==='client' && (c.menuStatus==='sent'||c.menuStatus==='revised');
+      mgrid += '<div class="ms'+(flagged?' flagged':'')+'" draggable="true" ondragstart="dragStart(event,\''+day+'\','+mi+','+c.id+')" ondragend="dragEnd()">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:4px">' +
+          '<span style="font-weight:500;font-size:13px;cursor:grab">⠿ '+esc(m.name)+(flagged?' <span style="font-size:10px;color:var(--red-d)">⚠ flagged</span>':'')+'</span>' +
+          '<div style="display:flex;gap:4px">' +
+            (clientCanEdit ? '<button class="btn bs" style="padding:2px 6px;font-size:10px" onclick="clientEditMeal(\''+day+'\','+mi+','+c.id+')"><i class="ti ti-edit" style="font-size:10px"></i> Edit</button>' +
+              '<button class="btn br" style="padding:2px 6px;font-size:10px" onclick="clientRemoveMeal(\''+day+'\','+mi+','+c.id+')"><i class="ti ti-x" style="font-size:10px"></i> Remove</button>' : '') +
+            (S.role!=='client' ? '<button class="btn" style="padding:2px 5px;font-size:10px" onclick="rmMeal(\''+day+'\','+mi+','+c.id+')"><i class="ti ti-x" style="font-size:10px"></i></button>' : '') +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:4px;flex-wrap:wrap">'+mtb(m.mealType)+pkb(m.packaging)+'<span class="tag" style="font-size:10px">'+esc(m.servings||'')+' serv</span>'+(m.forWho?'<span style="font-size:10px;color:var(--warm)">'+esc(m.forWho)+'</span>':'')+'</div>' +
+        (m.notes?'<div style="font-size:11px;color:var(--warm);font-style:italic;margin-top:3px">'+esc(m.notes)+'</div>':'') +
+      '</div>';
+    }
+    if (S.role!=='client') {
+      mgrid += '<button class="btn bs" style="width:100%;justify-content:center;font-size:11px;padding:5px;margin-top:4px" onclick="addMealM(\''+day+'\','+c.id+')"><i class="ti ti-plus" style="font-size:11px"></i> Add meal</button>';
+    }
+    mgrid += '</div>';
+  }
+
+  var grocery = '';
+  if (c.groceryList && c.groceryList.length) {
+    grocery = '<div class="card"><div class="cl">Grocery list'+(S.role==='client'?' <span class="tag tg" style="margin-left:6px">Your list</span>':'')+'</div>';
+    for (var i=0;i<c.groceryList.length;i++) {
+      var gs = c.groceryList[i];
+      grocery += '<div class="gst">'+esc(gs.cat)+'</div>';
+      for (var j=0;j<gs.items.length;j++) grocery += '<div class="gi"><input type="checkbox"> <span>'+esc(gs.items[j])+'</span></div>';
+    }
+    grocery += '</div>';
+  }
+
+  return stepsHtml + rotShelf + avoidShelf + clientBanner +
+    '<div class="card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">' +
+        '<div style="display:flex;align-items:center;gap:8px"><div class="cl" style="margin:0">Weekly meals</div>'+sb(c.menuStatus)+'</div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">'+acts+'</div>' +
+      '</div>' + mgrid +
+    '</div>' + grocery;
+}
+
+// drag & drop
+function dragStart(e, day, idx, cid) { _dragDay=day; _dragIdx=idx; _dragCid=cid; e.dataTransfer.effectAllowed='move'; }
+function dragEnd() { var cols=document.querySelectorAll('.day-col'); for(var i=0;i<cols.length;i++) cols[i].classList.remove('drag-over'); }
+function dropMeal(e, toDay, cid) {
+  e.preventDefault();
+  var col = document.getElementById('dc-'+toDay); if(col) col.classList.remove('drag-over');
+  if (_dragDay===null||_dragIdx===null||_dragCid===null) return;
+  var c = gc(cid); if(!c) return;
+  if (!c.weeklyMeals[toDay]) c.weeklyMeals[toDay]=[];
+  var meal = c.weeklyMeals[_dragDay].splice(_dragIdx,1)[0];
+  c.weeklyMeals[toDay].push(meal);
+  _dragDay=null;_dragIdx=null;_dragCid=null;
+  rWS();
+}
+
+function wfAct(status, cid) {
+  var c = gc(cid); if(!c) return;
+  c.menuStatus = status;
+  if (status==='complete' && (!c.groceryList||!c.groceryList.length)) {
+    c.groceryList = [{cat:'Proteins',items:['Add proteins...']},{cat:'Produce',items:['Add produce...']},{cat:'Pantry',items:['Add pantry items...']}];
+  }
+  if (status==='sent') {
+    var cu = null; for(var i=0;i<TEAM.length;i++){if(TEAM[i].clientId===cid){cu=TEAM[i];break;}}
+    if (cu) emailTo(cu.email,'Your menu + grocery list is ready — '+c.name,'Hi '+c.contact+',\n\nYour menu and grocery list for this week are ready. Log in to review and request any changes within '+(c.revisionDays||3)+' days.\n\n'+CFG.appUrl+'\n\n'+CFG.fromName);
+  }
+  if (status==='pending') { addN('Menu ready for sign-off: '+c.name,['dietitian'],[],{page:'workspace',wsCid:cid,wsTab:'menu'}); emailTo(CFG.emailDietitian,'Menu awaiting approval — '+c.name,'Hi Brittany,\n\n'+cn(c.chefId)+' submitted the menu for '+c.name+' and it\'s ready for your review.\n\n'+CFG.appUrl+'\n\n'+CFG.fromName); }
+  if (status==='approved') addN('Menu approved for '+c.name+' — ready to send to client',[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
+  rWS();
+}
+function addMealM(day, cid) {
+  var c = gc(cid); var plan = c ? (c.servicePlan||[]) : [];
+  var planNote = plan.length ? '<div style="font-size:12px;color:var(--warm);margin-bottom:12px;padding:8px 10px;background:var(--sage-l);border-radius:7px"><strong>Service plan:</strong> '+plan.map(function(sp){return sp.qty+'x '+sp.mealType+' · '+sp.packaging+' · '+sp.servings+' serv';}).join(' | ')+'</div>' : '';
+  var mtopts=''; for(var i=0;i<MTYPES.length;i++) mtopts+='<option>'+MTYPES[i]+'</option>';
+  var pkopts=''; for(var i=0;i<PKGS.length;i++) pkopts+='<option>'+PKGS[i]+'</option>';
+
+  // Recipe bank search
+  var recOpts = '<option value="">— or pick from recipe bank —</option>';
+  for(var i=0;i<RECIPES.length;i++) { recOpts += '<option value="'+i+'">'+esc(RECIPES[i].name)+' ('+RECIPES[i].mealType+')</option>'; }
+
+  openM('<h3 class="serif">Add meal — '+day+'</h3>'+planNote+
+    '<div class="fg"><label>Pick from recipe bank (optional)</label><select id="am-rb" onchange="fillFromRecipe(this.value)"><option value="">'+recOpts+'</option></select></div>' +
+    '<div class="fg"><label>Meal name</label><input id="am-n" placeholder="e.g. GF pasta marinara"></div>' +
+    '<div class="g2"><div class="fg"><label>Meal type</label><select id="am-t">'+mtopts+'</select></div>' +
+    '<div class="fg"><label>For who</label><input id="am-w" placeholder="Whole family" list="wl"><datalist id="wl"><option>Whole family</option><option>Kids only</option><option>Adults only</option></datalist></div></div>' +
+    '<div class="g2"><div class="fg"><label>Servings</label><input id="am-s" placeholder="4-6"></div>' +
+    '<div class="fg"><label>Packaging</label><select id="am-p">'+pkopts+'</select></div></div>' +
+    '<div class="fg"><label>Chef notes</label><input id="am-no" placeholder="e.g. Sauce on side"></div>' +
+    '<button class="btn bd bfull" onclick="saveMeal(\''+day+'\','+cid+')">Add to menu</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function fillFromRecipe(idx) {
+  if (!idx && idx!==0) return;
+  var r = RECIPES[idx]; if(!r) return;
+  $('am-n').value = r.name;
+  $('am-t').value = r.mealType;
+  $('am-s').value = r.servings || '';
+}
+function saveMeal(day, cid) {
+  var n = $('am-n').value.trim(); if(!n) return;
+  var c = gc(cid); if(!c) return;
+  if(!c.weeklyMeals) c.weeklyMeals={Mon:[],Tue:[],Wed:[],Thu:[],Fri:[],Sat:[],Sun:[]};
+  if(!c.weeklyMeals[day]) c.weeklyMeals[day]=[];
+  c.weeklyMeals[day].push({id:'m'+Date.now(),name:n,mealType:$('am-t').value,forWho:$('am-w').value,servings:$('am-s').value,packaging:$('am-p').value,notes:$('am-no').value});
+  closeM(); rWS();
+}
+function rmMeal(day,idx,cid) { var c=gc(cid);if(!c)return;c.weeklyMeals[day].splice(idx,1);rWS(); }
+function addRotToMenu(name, cid) {
+  var mtopts=''; for(var i=0;i<MTYPES.length;i++) mtopts+='<option>'+MTYPES[i]+'</option>';
+  var pkopts=''; for(var i=0;i<PKGS.length;i++) pkopts+='<option>'+PKGS[i]+'</option>';
+  var dopts=''; for(var i=0;i<WDAYS.length;i++) dopts+='<option>'+WDAYS[i]+'</option>';
+  openM('<h3 class="serif">Add "'+esc(name)+'" to menu</h3>' +
+    '<div class="fg"><label>Day</label><select id="rt-d">'+dopts+'</select></div>' +
+    '<div class="g2"><div class="fg"><label>Meal type</label><select id="rt-t">'+mtopts+'</select></div>' +
+    '<div class="fg"><label>Packaging</label><select id="rt-p">'+pkopts+'</select></div></div>' +
+    '<div class="g2"><div class="fg"><label>For who</label><input id="rt-w" placeholder="Whole family"></div>' +
+    '<div class="fg"><label>Servings</label><input id="rt-s" placeholder="4-6"></div></div>' +
+    '<button class="btn bd bfull" onclick="confirmRotAdd(\''+esc(name)+'\','+cid+')">Add to menu</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function confirmRotAdd(name,cid) {
+  var c=gc(cid);if(!c)return;
+  var day=$('rt-d').value;
+  if(!c.weeklyMeals[day])c.weeklyMeals[day]=[];
+  c.weeklyMeals[day].push({id:'m'+Date.now(),name:name,mealType:$('rt-t').value,forWho:$('rt-w').value,servings:$('rt-s').value,packaging:$('rt-p').value,notes:'From rotation bank'});
+  closeM();rWS();
+}
+// Client inline meal editing
+function clientEditMeal(day,mi,cid) {
+  var c=gc(cid);if(!c)return;
+  var meals=c.weeklyMeals[day]||[];var m=meals[mi];if(!m)return;
+  openM('<h3 class="serif">Edit meal</h3>' +
+    '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Changes go to your chef right away.</p>' +
+    '<div class="fg"><label>Meal name</label><input id="cem-n" value="'+esc(m.name)+'"></div>' +
+    '<div class="fg"><label>Notes for chef (optional)</label><input id="cem-no" value="'+esc(m.notes||'')+'" placeholder="e.g. Sauce on side, no onion"></div>' +
+    '<button class="btn bd bfull" onclick="saveClientMealEdit(\''+day+'\','+mi+','+cid+')">Save change</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function saveClientMealEdit(day,mi,cid) {
+  var c=gc(cid);if(!c)return;
+  var m=(c.weeklyMeals[day]||[])[mi];if(!m)return;
+  var newName=$('cem-n').value.trim();var newNote=$('cem-no').value.trim();
+  if(!newName){alert('Meal name required.');return;}
+  var oldName=m.name; m.name=newName; m.notes=newNote;
+  if(c.menuStatus==='sent')c.menuStatus='revised';
+  var u=tu(S.uid);
+  var note=newName!==oldName?'Changed "'+oldName+'" to "'+newName+'"'+(newNote?' — note: '+newNote:''):(newNote?'Updated note on "'+newName+'": "'+newNote+'"':'Updated "'+newName+'"');
+  if(!c.messages)c.messages=[];
+  c.messages.push({from:S.uid,time:'Just now',text:'Menu change: '+note});
+  addN((u?u.name:'Client')+' edited menu — '+note,[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
+  closeM();rWS();
+}
+function clientRemoveMeal(day,mi,cid) {
+  var c=gc(cid);if(!c)return;
+  var m=(c.weeklyMeals[day]||[])[mi];if(!m)return;
+  if(!confirm('Remove "'+m.name+'" from '+day+'?'))return;
+  c.weeklyMeals[day].splice(mi,1);
+  if(c.menuStatus==='sent')c.menuStatus='revised';
+  var u=tu(S.uid);
+  if(!c.messages)c.messages=[];
+  c.messages.push({from:S.uid,time:'Just now',text:'Removed "'+m.name+'" from '+day});
+  addN((u?u.name:'Client')+' removed "'+m.name+'" from '+day,[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'messages'});
+  rWS();
+}
+
+// ── FEEDBACK ──────────────────────────────────────────────────────────────────
+function rFeedback(c) {
+  var hist = c.feedbackHistory || [];
+  var rats = []; for(var i=0;i<hist.length;i++){if(hist[i].overallRating>0) rats.push(hist[i].overallRating);}
+  var avg = rats.length ? (rats.reduce(function(a,b){return a+b;},0)/rats.length).toFixed(1) : null;
+  var allM=[]; for(var i=0;i<hist.length;i++){var ms=hist[i].meals||[];for(var j=0;j<ms.length;j++) allM.push(ms[j]);}
+  var up=0,dn=0; for(var i=0;i<allM.length;i++){if(allM[i].thumbs==='up')up++;else if(allM[i].thumbs==='dn')dn++;}
+
+  var stats = hist.length ? '<div class="g3" style="margin-bottom:1rem">' +
+    '<div style="background:var(--sage-l);border-radius:10px;padding:1rem;text-align:center"><div class="serif" style="font-size:28px;color:var(--sage-d)">'+(avg||'—')+'</div><div style="font-size:11px;color:var(--sage-d)">Avg rating</div></div>' +
+    '<div style="background:var(--sage-l);border-radius:10px;padding:1rem;text-align:center"><div style="font-size:22px">👍 '+up+'</div><div style="font-size:11px;color:var(--sage-d)">Loved</div></div>' +
+    '<div style="background:var(--red-l);border-radius:10px;padding:1rem;text-align:center"><div style="font-size:22px">👎 '+dn+'</div><div style="font-size:11px;color:var(--red-d)">Didn\'t work</div></div>' +
+  '</div>' : '';
+
+  var entries = '';
+  for (var fi=0;fi<hist.length;fi++) {
+    var fb=hist[fi];
+    var mRows='';
+    var meals=fb.meals||[];
+    for(var mi=0;mi<meals.length;mi++){
+      var m=meals[mi];
+      mRows+='<div style="padding:8px 0;border-bottom:0.5px solid var(--bdr)">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
+          '<span style="font-weight:500;font-size:13px">'+esc(m.name)+'</span>' +
+          '<span>'+(m.thumbs==='up'?'👍':m.thumbs==='dn'?'👎':'—')+'</span>' +
+          (m.stars?'<span style="color:var(--amber);font-size:12px">'+stars(m.stars)+'</span>':'') +
+          (m.kidsAte?'<span class="tag" style="font-size:10px">Kids: '+esc(m.kidsAte)+'</span>':'') +
+          (m.repeat?'<span class="tag '+(m.repeat==='No'?'tr2':m.repeat==='Yes'?'tg':'ta')+'" style="font-size:10px">'+esc(m.repeat)+'</span>':'') +
+        '</div>' +
+        (m.note?'<div style="font-size:11px;color:var(--warm);font-style:italic;margin-top:3px">"'+esc(m.note)+'"</div>':'') +
+      '</div>';
+    }
+    entries += '<div class="card">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">' +
+        '<div><div style="font-weight:500">Week of '+esc(fb.weekOf||'')+'</div><div style="font-size:12px;color:var(--warm)">By '+esc(fb.submittedBy||'')+'</div></div>' +
+        '<div style="display:flex;align-items:center;gap:8px"><span style="color:var(--amber)">'+stars(fb.overallRating||0)+'</span><span style="font-size:13px;font-weight:500">'+(fb.overallRating||'—')+'/5</span>' +
+        (S.role==='client'?'<button class="btn bs" style="font-size:11px;padding:4px 8px" onclick="editFb('+c.id+','+fi+')"><i class="ti ti-edit" style="font-size:11px"></i> Edit</button>':'') +
+        '</div>' +
+      '</div>' +
+      (fb.overallNote?'<div style="font-size:13px;background:var(--cream);border-radius:8px;padding:10px;margin-bottom:12px;font-style:italic">"'+esc(fb.overallNote)+'"</div>':'') +
+      mRows +
+    '</div>';
+  }
+
+  return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px">' +
+    '<h3 class="serif" style="font-size:18px;font-weight:400">Feedback history</h3>' +
+    (S.role==='client'?'<button class="btn bs" onclick="showFbForm('+c.id+',null)"><i class="ti ti-star" style="font-size:12px"></i> Rate this week</button>':'') +
+  '</div>' + stats + (entries||'<div class="empty">No feedback yet.</div>');
+}
+
+function showFbForm(cid, editIdx) {
+  var c = gc(cid); if(!c) return;
+  var allM = [];
+  var wdays = WDAYS;
+  for(var i=0;i<wdays.length;i++){var ms=(c.weeklyMeals||{})[wdays[i]]||[];for(var j=0;j<ms.length;j++) allM.push({meal:ms[j],day:wdays[i]});}
+
+  var isEdit = editIdx !== null && editIdx !== undefined && editIdx >= 0;
+  var fd;
+  if (isEdit && c.feedbackHistory && c.feedbackHistory[editIdx]) {
+    var existing = c.feedbackHistory[editIdx];
+    fd = {or:existing.overallRating||0, on:existing.overallNote||'', meals:{}};
+    var emls = existing.meals||[];
+    for(var i=0;i<emls.length;i++){
+      fd.meals[emls[i].name]={thumbs:emls[i].thumbs||'',stars:emls[i].stars||0,kidsAte:emls[i].kidsAte||'',repeat:emls[i].repeat||'',note:emls[i].note||''};
+    }
+  } else {
+    if(!S.fbDraft[cid]) S.fbDraft[cid]={or:0,on:'',meals:{}};
+    fd = S.fbDraft[cid];
+  }
+
+  var hasK = false;
+  var members = c.familyMembers||[];
+  for(var i=0;i<members.length;i++){if(members[i].role==='child'){hasK=true;break;}}
+
+  var mcards = '';
+  for(var i=0;i<allM.length;i++){
+    var m=allM[i].meal; var day=allM[i].day;
+    var md=fd.meals[m.name]||{thumbs:'',stars:0,kidsAte:'',repeat:'',note:''};
+    var starsHtml=''; for(var si=1;si<=5;si++) starsHtml+='<span class="star'+(md.stars>=si?' on':'')+'" onclick="setFbS('+cid+',\''+esc(m.name)+'\','+si+(isEdit?','+editIdx:',null')+')">★</span>';
+    var kidsHtml=''; if(hasK){kidsHtml='<div style="font-size:12px;color:var(--warm);margin-bottom:6px">Kids — did they eat it?</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">';['All ate it','Most ate it','Some of it','Refused'].forEach(function(k){kidsHtml+='<button class="pb'+(md.kidsAte===k?' on':'')+'" onclick="setFb('+cid+',\''+esc(m.name)+'\',\'kidsAte\',\''+k+'\''+(isEdit?','+editIdx:',null')+')">'+k+'</button>';});kidsHtml+='</div>';}
+    var repeatHtml='<div style="font-size:12px;color:var(--warm);margin-bottom:6px">Add to rotation?</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">';
+    ['Yes','Yes — with tweaks','Maybe','No'].forEach(function(r){repeatHtml+='<button class="pb'+(md.repeat===r?(r==='No'?' on-no':r==='Yes — with tweaks'?' on-tw':' on'):'')+'" onclick="setFb('+cid+',\''+esc(m.name)+'\',\'repeat\',\''+r+'\''+(isEdit?','+editIdx:',null')+')">'+r+'</button>';});
+    repeatHtml+='</div>';
+    mcards+='<div class="card">' +
+      '<div style="font-weight:500;font-size:14px;margin-bottom:8px">'+esc(m.name)+' <span style="font-size:11px;color:var(--warm);font-weight:400">'+day+' · '+m.mealType+'</span></div>' +
+      '<div style="display:flex;gap:8px;margin-bottom:8px"><button class="thb'+(md.thumbs==='up'?' up':'')+'" onclick="setFb('+cid+',\''+esc(m.name)+'\',\'thumbs\',\'up\''+(isEdit?','+editIdx:',null')+')">👍</button>' +
+      '<button class="thb'+(md.thumbs==='dn'?' dn':'')+'" onclick="setFb('+cid+',\''+esc(m.name)+'\',\'thumbs\',\'dn\''+(isEdit?','+editIdx:',null')+')">👎</button>' +
+      '<span style="font-size:12px;color:var(--warm);align-self:center">'+(md.thumbs==='up'?'Loved it':md.thumbs==='dn'?'Didn\'t work':'How did it land?')+'</span></div>' +
+      '<div style="font-size:12px;color:var(--warm);margin-bottom:6px">Star rating:</div>' +
+      '<div style="display:flex;gap:5px;margin-bottom:10px">'+starsHtml+'</div>' +
+      kidsHtml + repeatHtml +
+      '<div class="fi"><label>Notes for chef</label><textarea placeholder="e.g. Could we add more garlic?" oninput="setFbNote('+cid+',\''+esc(m.name)+'\','+(isEdit?editIdx:'null')+',this.value)" style="min-height:55px">'+esc(md.note||'')+'</textarea></div>' +
+    '</div>';
+  }
+
+  var osHtml='<div style="display:flex;gap:6px" id="fbos">';
+  for(var si=1;si<=5;si++) osHtml+='<span class="star'+(fd.or>=si?' on':'')+'" style="font-size:28px" onclick="setFbO('+cid+','+si+(isEdit?','+editIdx:',null')+')">★</span>';
+  osHtml+='</div>';
+
+  openM('<h3 class="serif">'+(isEdit?'Edit feedback':'How was this week?')+'</h3>' +
+    '<div style="background:var(--sage-l);border:0.5px solid var(--sage);border-radius:10px;padding:1rem;margin-bottom:1rem"><div style="font-size:12px;color:var(--sage-d);margin-bottom:6px">Overall service rating:</div>'+osHtml+'</div>' +
+    '<div class="fi" style="margin-bottom:1rem"><label>Overall notes or requests for next week</label><textarea id="fb-on" placeholder="e.g. Everything was great!" oninput="setFbOn('+cid+(isEdit?','+editIdx:',null')+',this.value)" style="min-height:70px">'+esc(fd.on||'')+'</textarea></div>' +
+    '<div style="font-size:13px;font-weight:500;margin-bottom:10px">Rate each meal:</div>' +
+    (mcards||'<div class="empty">No meals this week.</div>') +
+    (allM.length?'<button class="btn bd bfull" style="margin-top:.5rem" onclick="submitFb('+cid+(isEdit?','+editIdx:',null')+')">'+( isEdit?'Save changes':'Submit feedback')+' <i class="ti ti-send" style="font-size:13px"></i></button>':'') +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+
+function getFd(cid, editIdx) {
+  if (editIdx !== null && editIdx !== undefined && editIdx >= 0) {
+    var c=gc(cid); if(!c||!c.feedbackHistory||!c.feedbackHistory[editIdx]) return null;
+    var fb=c.feedbackHistory[editIdx];
+    var fd={or:fb.overallRating||0,on:fb.overallNote||'',meals:{}};
+    var ms=fb.meals||[]; for(var i=0;i<ms.length;i++){fd.meals[ms[i].name]={thumbs:ms[i].thumbs||'',stars:ms[i].stars||0,kidsAte:ms[i].kidsAte||'',repeat:ms[i].repeat||'',note:ms[i].note||''};}
+    return fd;
+  }
+  if(!S.fbDraft[cid]) S.fbDraft[cid]={or:0,on:'',meals:{}};
+  return S.fbDraft[cid];
+}
+function setFd(cid, editIdx, fd) {
+  if (editIdx !== null && editIdx !== undefined && editIdx >= 0) {
+    var c=gc(cid); if(!c||!c.feedbackHistory) return;
+    var fb=c.feedbackHistory[editIdx]; if(!fb) return;
+    fb.overallRating=fd.or; fb.overallNote=fd.on;
+    var ms=fb.meals||[]; for(var k in fd.meals){var md=fd.meals[k];var found=false;for(var i=0;i<ms.length;i++){if(ms[i].name===k){ms[i].thumbs=md.thumbs;ms[i].stars=md.stars;ms[i].kidsAte=md.kidsAte;ms[i].repeat=md.repeat;ms[i].note=md.note;found=true;break;}}if(!found) ms.push({name:k,thumbs:md.thumbs,stars:md.stars,kidsAte:md.kidsAte,repeat:md.repeat,note:md.note});}
+  } else { S.fbDraft[cid]=fd; }
+}
+function setFb(cid,name,field,val,editIdx){var fd=getFd(cid,editIdx);if(!fd)return;if(!fd.meals[name])fd.meals[name]={thumbs:'',stars:0,kidsAte:'',repeat:'',note:''};fd.meals[name][field]=val;setFd(cid,editIdx,fd);showFbForm(cid,editIdx!==undefined?editIdx:null);}
+function setFbS(cid,name,n,editIdx){setFb(cid,name,'stars',n,editIdx);}
+function setFbO(cid,n,editIdx){var fd=getFd(cid,editIdx);if(!fd)return;fd.or=n;setFd(cid,editIdx,fd);var el=$('fbos');if(el){var sp=el.querySelectorAll('.star');for(var i=0;i<sp.length;i++)sp[i].classList.toggle('on',i<n);}}
+function setFbOn(cid,editIdx,val){var fd=getFd(cid,editIdx);if(!fd)return;fd.on=val;setFd(cid,editIdx,fd);}
+function setFbNote(cid,name,editIdx,val){var fd=getFd(cid,editIdx);if(!fd)return;if(!fd.meals[name])fd.meals[name]={thumbs:'',stars:0,kidsAte:'',repeat:'',note:''};fd.meals[name].note=val;setFd(cid,editIdx,fd);}
+function editFb(cid,idx){showFbForm(cid,idx);}
+
+function submitFb(cid,editIdx){
+  var c=gc(cid);if(!c)return;
+  var fd=getFd(cid,editIdx);if(!fd)return;
+  var allM=[];var wdays=WDAYS;
+  for(var i=0;i<wdays.length;i++){var ms=(c.weeklyMeals||{})[wdays[i]]||[];for(var j=0;j<ms.length;j++) allM.push(ms[j]);}
+  var mR=[];
+  for(var i=0;i<allM.length;i++){var m=allM[i];var md=fd.meals[m.name]||{thumbs:'',stars:0,kidsAte:'',repeat:'',note:''};mR.push({name:m.name,mealType:m.mealType,thumbs:md.thumbs,stars:md.stars,kidsAte:md.kidsAte,repeat:md.repeat,note:md.note});}
+
+  if(!c.rotationBank)c.rotationBank=[];if(!c.avoidBank)c.avoidBank=[];
+  var rotA=0;
+  for(var i=0;i<mR.length;i++){
+    var m=mR[i];
+    if((m.repeat==='Yes'||m.repeat==='Yes — with tweaks')){
+      var found=false;for(var j=0;j<c.rotationBank.length;j++){if(c.rotationBank[j].name===m.name){found=true;break;}}
+      if(!found){c.rotationBank.push({name:m.name,mealType:m.mealType||'Dinner',stars:m.stars,repeat:m.repeat,note:m.note});rotA++;}
+    }
+    if(m.repeat==='No'){var found2=false;for(var j=0;j<c.avoidBank.length;j++){if(c.avoidBank[j].name===m.name){found2=true;break;}}if(!found2)c.avoidBank.push({name:m.name,note:m.note});}
+  }
+
+  var u=tu(S.uid);
+  var isEdit = editIdx !== null && editIdx !== undefined && editIdx >= 0;
+  if (isEdit && c.feedbackHistory && c.feedbackHistory[editIdx]) {
+    c.feedbackHistory[editIdx].overallRating=fd.or;c.feedbackHistory[editIdx].overallNote=fd.on;c.feedbackHistory[editIdx].meals=mR;
+  } else {
+    if(!c.feedbackHistory)c.feedbackHistory=[];
+    c.feedbackHistory.unshift({id:'fb'+Date.now(),weekOf:tod(),submittedBy:(u?u.name:'Client'),overallRating:fd.or,overallNote:fd.on,meals:mR});
+    S.fbDraft[cid]={or:0,on:'',meals:{}};
+  }
+  addN((u?u.name:'Client')+' submitted feedback for '+c.name+(rotA?' — '+rotA+' meal'+(rotA!==1?'s':'')+' added to rotation':''),['dietitian','manager'],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'feedback'});
+  closeM();rWS();
+}
+
+// ── MESSAGES TAB ──────────────────────────────────────────────────────────────
+function rMsgTab(c) {
+  var msgs = c.messages || [];
+  var html = '<div style="font-weight:500;margin-bottom:12px;font-size:14px">'+(S.role==='client'?'Your chef — '+cn(c.chefId):'Client — '+esc(c.contact))+'</div>' +
+    '<div class="mthread" id="mthread">';
+  if (msgs.length) {
+    for(var i=0;i<msgs.length;i++){
+      var m=msgs[i];var u=tu(m.from);var me=m.from===S.uid;
+      html+='<div><div style="font-size:10px;color:var(--warm);margin-bottom:2px;'+(me?'text-align:right':'')+'">'+(u?esc(u.name):'Unknown')+' · '+esc(m.time||'')+'</div><div class="msg '+(me?'me':'them')+'">'+esc(m.text)+'</div></div>';
+    }
+  } else { html += '<div class="empty" style="padding:.5rem">No messages yet.</div>'; }
+  html += '</div><div class="minput"><input id="minp" placeholder="Type a message..." onkeydown="if(event.key===\'Enter\')sendMsg('+c.id+')"><button class="btn bs" onclick="sendMsg('+c.id+')">Send <i class="ti ti-arrow-right" style="font-size:12px"></i></button></div>';
+  return html;
+}
+function sendMsg(cid){
+  var inp=$('minp');var t=inp?inp.value.trim():'';if(!t)return;inp.value='';
+  var c=gc(cid);if(!c)return;
+  if(!c.messages)c.messages=[];
+  c.messages.push({from:S.uid,time:'Just now',text:t});
+  if(S.role==='client'){
+    var chef=tu(c.chefId);
+    addN('New message from '+(tu(S.uid)?tu(S.uid).name:'Client')+' — '+c.name,['manager'],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'messages'});
+    if(chef) emailTo([chef.email,CFG.emailManager],'New message from '+c.contact+' — '+c.name,'"'+t+'"\n\nReply in The Table.\n\n'+CFG.appUrl+'\n\n'+CFG.fromName);
+  } else {
+    var cu=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].clientId===cid){cu=TEAM[i];break;}}
+    if(cu) addN('New message from '+(tu(S.uid)?tu(S.uid).name:'Team')+' — '+c.name,[],[cu.id],{page:'messages',wsCid:cid});
+  }
+  rWS();
+}
+
+// ── CHECKLIST ─────────────────────────────────────────────────────────────────
+function rChecklist(c){
+  var alKeys=famKeys(c);var al=fam(c);
+  var alB=alKeys.length?'<div class="abanner" style="margin-bottom:1rem"><i class="ti ti-alert-triangle" style="font-size:14px;margin-right:6px"></i><strong>Check before starting:</strong> '+(function(){var s='';for(var i=0;i<alKeys.length;i++){if(i)s+=' · ';s+='<strong>'+alKeys[i]+'</strong> ('+al[alKeys[i]].join(', ')+')';}return s;})()+'</div>':'';
+  var secs='';
+  for(var si=0;si<CL.length;si++){
+    var s=CL[si];var itemsHtml='';
+    for(var ii=0;ii<s.items.length;ii++){
+      var it=s.items[ii];
+      var alNote='';
+      if(alKeys.length&&si===0&&ii===0) alNote='<div style="margin-top:6px;padding:7px 10px;background:var(--red-l);border:0.5px solid var(--red);border-radius:7px;font-size:12px;color:var(--red-d)">⚠️ This family: '+(function(){var s2='';for(var k=0;k<alKeys.length;k++){if(k)s2+=' · ';s2+='<strong>'+alKeys[k]+'</strong> ('+al[alKeys[k]].join(', ')+')';}return s2;})()+'</div>';
+      itemsHtml+='<div class="cli"><input type="checkbox" id="cb-'+si+'-'+ii+'" onchange="updCL()"><div style="flex:1"><div class="clit'+(it.c?' crit':'')+'">'+(it.c?'<i class="ti ti-alert-triangle" style="font-size:12px;margin-right:4px"></i>':'')+it.t+alNote+'</div>'+(it.n?'<div class="clin">'+it.n+'</div>':'')+'</div></div>';
+    }
+    secs+='<div class="cls"><div class="clsh" onclick="togCL('+si+')"><span style="font-weight:500;font-size:13px">'+s.s+'</span><span style="font-size:12px;color:var(--warm)" id="clc-'+si+'">0 / '+s.items.length+'</span></div><div class="clpb"><div class="clpf" id="clb-'+si+'" style="width:0%"></div></div><div class="clib" id="cli-'+si+'">'+itemsHtml+'</div></div>';
+  }
+  return alB+
+    '<div class="opbar"><div style="flex:1"><div style="font-size:12px;color:var(--warm);margin-bottom:5px">Overall progress — '+esc(c.name)+'</div><div style="height:6px;background:var(--bdr);border-radius:99px;overflow:hidden"><div class="clpf" id="clop" style="width:0%;background:var(--sage)"></div></div></div><div style="font-size:18px;font-weight:500;min-width:75px;text-align:right" id="cloc">0 / '+CLTOTAL+'</div></div>'+
+    secs+
+    '<div class="card" id="clsc"><div class="cl">Service details</div>'+
+      '<div class="g2" style="margin-bottom:10px"><div class="fi"><label>Service date</label><input id="cl-date" value="'+tod()+'"></div><div class="fi"><label>Service type</label><select id="cl-type"><option>Weekly meal prep</option><option>Custom service</option><option>First service</option></select></div></div>'+
+      '<div class="fi" style="margin-bottom:12px"><label>Notes for Brittany & Brenda</label><textarea id="cl-notes" placeholder="e.g. Sheet pan had existing burn marks before service." style="min-height:70px"></textarea></div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bd" onclick="submitCL('+c.id+')"><i class="ti ti-send" style="font-size:12px"></i> Submit — notifies Brittany & Brenda</button><button class="btn" onclick="resetCL()"><i class="ti ti-refresh" style="font-size:12px"></i> Reset</button></div>'+
+    '</div>';
+}
+function togCL(si){var el=$('cli-'+si);if(el)el.style.display=el.style.display==='none'?'':'none';}
+function updCL(){
+  var done=0;
+  for(var si=0;si<CL.length;si++){
+    var d=0;
+    for(var ii=0;ii<CL[si].items.length;ii++){var cb=$('cb-'+si+'-'+ii);if(cb&&cb.checked)d++;}
+    done+=d;var pct=Math.round(d/CL[si].items.length*100);
+    var cnt=$('clc-'+si);var bar=$('clb-'+si);
+    if(cnt)cnt.textContent=d+' / '+CL[si].items.length;
+    if(bar)bar.style.width=pct+'%';
+  }
+  var pct=Math.round(done/CLTOTAL*100);var op=$('clop');var oc=$('cloc');
+  if(op)op.style.width=pct+'%';if(oc)oc.textContent=done+' / '+CLTOTAL;
+}
+function resetCL(){for(var si=0;si<CL.length;si++){for(var ii=0;ii<CL[si].items.length;ii++){var cb=$('cb-'+si+'-'+ii);if(cb)cb.checked=false;}}var n=$('cl-notes');if(n)n.value='';updCL();}
+function submitCL(cid){
+  var c=gc(cid);if(!c)return;
+  var done=0;for(var si=0;si<CL.length;si++){for(var ii=0;ii<CL[si].items.length;ii++){var cb=$('cb-'+si+'-'+ii);if(cb&&cb.checked)done++;}}
+  var score=Math.round(done/CLTOTAL*100);
+  var date=($('cl-date')?$('cl-date').value:tod())||tod();
+  var stype=($('cl-type')?$('cl-type').value:'')||'Weekly meal prep';
+  var notes=($('cl-notes')?$('cl-notes').value:'')||'';
+  var chef=tu(S.uid)?tu(S.uid).name:'Chef';
+  if(!c.checklistHistory)c.checklistHistory=[];
+  c.checklistHistory.unshift({id:'ch'+Date.now(),date:date,chef:chef,serviceType:stype,completed:done,total:CLTOTAL,score:score,notes:notes,submittedAt:nowt()});
+  addN(chef+' submitted service checklist for '+c.name+' — '+done+'/'+CLTOTAL+' ('+score+'%)',['dietitian','manager'],[],{page:'workspace',wsCid:cid,wsTab:'cl-history'});
+  emailTo([CFG.emailDietitian,CFG.emailManager],'Service checklist — '+c.name+' '+date+' ('+score+'%)',chef+' completed the checklist for '+c.name+'.\n\nDate: '+date+'\nCompletion: '+done+'/'+CLTOTAL+' ('+score+'%)\n'+(notes?'Notes: "'+notes+'"\n':'')+'\n'+CFG.fromName);
+  var card=$('clsc');if(card)card.innerHTML='<div style="text-align:center;padding:1.5rem"><div style="font-size:40px;margin-bottom:10px">'+(score>=90?'✅':score>=70?'⚠️':'❌')+'</div><div style="font-weight:500;font-size:15px;margin-bottom:6px">Submitted — '+done+'/'+CLTOTAL+' ('+score+'%)</div><div style="font-size:13px;color:var(--warm);margin-bottom:16px">Logged · Brittany and Brenda notified</div><div style="display:flex;gap:8px;justify-content:center"><button class="btn bs" onclick="swTab(\'cl-history\');rWS()">View history</button><button class="btn" onclick="resetCL();updCL()">Start new</button></div></div>';
+}
+function rCLHistory(c){
+  var h=c.checklistHistory||[];
+  if(!h.length)return'<div class="empty" style="margin-top:2rem">No checklists submitted yet.</div>';
+  var avg=Math.round(h.reduce(function(a,x){return a+x.score;},0)/h.length);
+  var html='<div class="g3" style="margin-bottom:1rem">' +
+    '<div style="background:var(--sage-l);border-radius:10px;padding:1rem;text-align:center"><div class="serif" style="font-size:28px;color:var(--sage-d)">'+avg+'%</div><div style="font-size:11px;color:var(--sage-d)">Avg completion</div></div>' +
+    '<div style="background:var(--warm-l);border-radius:10px;padding:1rem;text-align:center"><div class="serif" style="font-size:28px;color:var(--warm-d)">'+h.length+'</div><div style="font-size:11px;color:var(--warm)">Services logged</div></div>' +
+    '<div style="background:'+(avg>=90?'var(--sage-l)':'var(--amber-l)')+';border-radius:10px;padding:1rem;text-align:center"><div style="font-size:24px">'+(avg>=90?'✅':avg>=70?'⚠️':'❌')+'</div><div style="font-size:11px;color:var(--warm)">Status</div></div>' +
+  '</div><div class="card"><div class="cl">Submission history</div>';
+  for(var i=0;i<h.length;i++){
+    var x=h[i];
+    html+='<div style="padding:10px 0;border-bottom:0.5px solid var(--bdr)"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px"><div><div style="font-weight:500;font-size:13px">'+esc(x.date)+' · '+esc(x.serviceType)+'</div><div style="font-size:12px;color:var(--warm)">Chef: '+esc(x.chef)+' · '+esc(x.submittedAt||'')+'</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:500;color:'+(x.score>=90?'var(--sage-d)':x.score>=70?'var(--amber-d)':'var(--red-d)')+'">'+x.completed+'/'+x.total+' ('+x.score+'%)</span><span style="font-size:18px">'+(x.score>=90?'✅':x.score>=70?'⚠️':'❌')+'</span></div></div>'+(x.notes?'<div style="font-size:12px;color:var(--warm);font-style:italic;margin-top:5px;padding:7px 9px;background:var(--cream);border-radius:6px">"'+esc(x.notes)+'"</div>':'')+'</div>';
+  }
+  return html+'</div>';
+}
+
+// ── AI ASSISTANT ──────────────────────────────────────────────────────────────
+function buildSP(c){
+  var al=fam(c);var alKeys=famKeys(c);
+  var rotM=[];if(c.rotationBank){for(var i=0;i<c.rotationBank.length;i++){var r=c.rotationBank[i];rotM.push(r.name+' (★'+(r.stars||0)+'/5, '+r.repeat+(r.note?', "'+r.note+'"':'')+')');}}
+  var avM=[];if(c.avoidBank){for(var i=0;i<c.avoidBank.length;i++){var a=c.avoidBank[i];avM.push(a.name+(a.note?' — '+a.note:''));}}
+  var rfb=[];if(c.feedbackHistory){for(var i=0;i<Math.min(3,c.feedbackHistory.length);i++){var fb=c.feedbackHistory[i];var mStr=[];var ms=fb.meals||[];for(var j=0;j<ms.length;j++){mStr.push(ms[j].name+' '+(ms[j].thumbs==='up'?'👍':'👎')+' kids:'+(ms[j].kidsAte||'—')+' repeat:'+(ms[j].repeat||'—'));}rfb.push('Week of '+fb.weekOf+': '+fb.overallRating+'/5. "'+(fb.overallNote||'')+'". Meals: '+mStr.join(', '));}}
+  var curM=[];var wdays=WDAYS;for(var i=0;i<wdays.length;i++){var day=wdays[i];var ms=(c.weeklyMeals||{})[day]||[];if(ms.length){var ns=[];for(var j=0;j<ms.length;j++)ns.push(ms[j].name);curM.push(day+': '+ns.join(', '));}}
+  var cmsgs=[];if(c.messages){for(var i=Math.max(0,c.messages.length-5);i<c.messages.length;i++){var msg=c.messages[i];var u=tu(msg.from);if(u&&u.role==='client')cmsgs.push(msg.text);}}
+  var famSum=[];var members=c.familyMembers||[];for(var i=0;i<members.length;i++){var m=members[i];famSum.push(m.name+' ('+(m.role==='child'?'child, age '+(m.age||'?'):'adult')+'): allergies='+(m.allergies&&m.allergies.length?m.allergies.join(','):'none')+'. '+(m.notes||''));}
+  var chefN=(tu(c.chefId)?tu(c.chefId).name:'Chef').split(' ')[0];
+  var alStr='';if(alKeys.length){for(var i=0;i<alKeys.length;i++){alStr+='\n⚠️ '+alKeys[i].toUpperCase()+' — affects: '+al[alKeys[i]].join(', ')+'. NEVER suggest anything containing '+alKeys[i]+'. If you do, start with ⚠️ ALLERGY FLAG.';}}
+  return 'You are the AI menu planning assistant inside "The Table" — built for Eddelbuttel Nutrition, owned by Brittany Eddelbuttel, RD.\nYou are helping '+chefN+' plan meals for '+c.name+'.\n\nFAMILY: '+c.name+' | Contact: '+c.contact+' | Favorites: '+(c.favoriteRestaurants||'not specified')+'\nMEMBERS:\n'+(famSum.join('\n')||'Not added yet')+'\n\nALLERGIES — NON-NEGOTIABLE:'+(alStr||'\nNo known allergies.')+'\n\nPREFERENCES: Safe foods: '+(c.safe||'not specified')+' | Aversions: '+(c.aversions||'none')+' | Notes: '+(c.notes||'none')+'\n\nAPPROVED ROTATION: '+(rotM.join('; ')||'none yet')+'\nDO NOT REPEAT: '+(avM.join('; ')||'none')+'\nRECENT FEEDBACK:\n'+(rfb.join('\n')||'none')+'\nTHIS WEEK\'S MENU: '+(curM.join('; ')||'nothing planned yet')+'\nRECENT CLIENT MESSAGES: '+(cmsgs.join(' | ')||'none')+'\n\nBEHAVIOR:\n- Speak directly to '+chefN+' the chef.\n- Always reference specific family details. Never give generic ideas.\n- Specify exactly how to adapt each meal for this family.\n- Flag allergens immediately with ⚠️ ALLERGY FLAG.\n- Prioritize rotation meals the client has approved.\n- Be warm, specific, and practical.';
+}
+function buildAIIntro(c){
+  var al=fam(c);var alKeys=famKeys(c);
+  var chefN=(tu(c.chefId)?tu(c.chefId).name:'Chef').split(' ')[0];
+  var kids=[];var members=c.familyMembers||[];for(var i=0;i<members.length;i++){if(members[i].role==='child')kids.push(members[i].name+' (age '+(members[i].age||'?')+')');}
+  var top=[];if(c.rotationBank){for(var i=0;i<c.rotationBank.length;i++){if(c.rotationBank[i].stars>=4)top.push(c.rotationBank[i].name);}}top=top.slice(0,3);
+  var lf=c.feedbackHistory&&c.feedbackHistory.length?c.feedbackHistory[0]:null;
+  var lr=null;if(c.messages){for(var i=c.messages.length-1;i>=0;i--){var u=tu(c.messages[i].from);if(u&&u.role==='client'){lr=c.messages[i];break;}}}
+  var t='Hi '+chefN+'! Ready to plan for **'+c.name+'**. Here\'s what I know:\n\n';
+  t+='**Family:** '+c.contact+(kids.length?' — kids: '+kids.join(', '):'')+'\n';
+  if(alKeys.length)t+='**⚠️ Allergies:** '+(function(){var s=[];for(var i=0;i<alKeys.length;i++){s.push(alKeys[i]+' ('+al[alKeys[i]].join(', ')+')');}return s.join(', ');})()+" — I'll flag anything containing these.\n";
+  t+='**Safe foods:** '+(c.safe||'not specified')+'.\n';
+  if(c.aversions)t+='**Aversions:** '+c.aversions+'.\n';
+  if(top.length)t+='**Top rotation meals:** '+top.join(', ')+'.\n';
+  if(c.avoidBank&&c.avoidBank.length)t+='**Don\'t repeat:** '+(function(){var s=[];for(var i=0;i<c.avoidBank.length;i++)s.push(c.avoidBank[i].name);return s.join(', ');})()+'.\n';
+  if(lf)t+='**Last feedback:** ★'+lf.overallRating+'/5 — "'+(lf.overallNote||'no note')+'".\n';
+  if(lr)t+='\n**Latest from client:** "'+lr.text+'"';
+  t+='\n\nWhat direction are you thinking for this week?';
+  if(!S.aiH[c.id])S.aiH[c.id]=[];
+  S.aiH[c.id]=[{role:'assistant',content:t,intro:true}];
+}
+function rAI(){
+  var cl=myC();var c=cl.length?cl[0]:null;
+  if(S.wsCid){for(var i=0;i<cl.length;i++){if(cl[i].id===S.wsCid){c=cl[i];break;}}}
+  if(!c){$('p-ai').innerHTML='<div class="empty">No clients assigned.</div>';return;}
+  if(!S.aiH[c.id]||!S.aiH[c.id].length)buildAIIntro(c);
+  var al=fam(c);var alKeys=famKeys(c);
+  var lf=c.feedbackHistory&&c.feedbackHistory.length?c.feedbackHistory[0]:null;
+  var lr=null;if(c.messages){for(var i=c.messages.length-1;i>=0;i--){var u=tu(c.messages[i].from);if(u&&u.role==='client'){lr=c.messages[i];break;}}}
+  var picker='';
+  if(cl.length>1){picker='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem">';for(var i=0;i<cl.length;i++){picker+='<button class="btn'+(cl[i].id===c.id?' bs':'')+'" onclick="S.wsCid='+cl[i].id+';rAI()">'+cl[i].name.replace('The ','').replace(' Family','')+'</button>';}picker+='</div>';}
+  var alCtx=alKeys.length?'<span style="color:var(--red-d)">⚠️ Allergies: '+(function(){var s=[];for(var i=0;i<alKeys.length;i++){s.push(alKeys[i]+' ('+al[alKeys[i]].join(', ')+')');}return s.join(' · ');})()+'</span><br>':'';
+  var kids=[];var members=c.familyMembers||[];for(var i=0;i<members.length;i++){if(members[i].role==='child')kids.push(members[i].name+' ('+members[i].age+')');}
+  var ctx='<div class="ai-ctx"><strong>'+esc(c.name)+'</strong> · Chef: '+cn(c.chefId)+' · '+DAYS[c.serviceDay]+'s<br>'+alCtx+'Kids: '+(kids.join(', ')||'none')+' · Rotation: <strong>'+(c.rotationBank?c.rotationBank.length:0)+' approved</strong>'+(lf?' · Last rating: ★'+lf.overallRating+'/5':'')+'<br>'+(lr?'<span style="color:var(--blue-d)">💬 Latest: "'+esc(lr.text.substring(0,90))+(lr.text.length>90?'…':'')+'"</span>':'')+'</div>';
+  var msgs='';var aiHist=S.aiH[c.id]||[];
+  for(var i=0;i<aiHist.length;i++){var m=aiHist[i];msgs+='<div class="aim '+(m.role==='user'?'user':m.flag?'flag':m.intro?'ai intro':'ai')+'">'+m.content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')+'</div>';}
+  var qps=[
+    {l:'Suggest dinners this week',p:'Suggest 5 dinner ideas for '+c.name+' this week. Use their rotation bank and avoid recently served meals.'},
+    {l:'Kid-friendly lunches',p:'Suggest 5 grab-and-go lunch ideas for the kids. Keep it simple, plain, and allergy-safe.'},
+    {l:'What worked best?',p:'Based on feedback history, what has worked best for '+c.name+'? What should I prioritize this week?'},
+    {l:'Check this week\'s menu',p:'Review this week\'s current menu for '+c.name+' and flag any issues — allergens, repeats, gaps.'}
+  ];
+  var qpHtml='';for(var i=0;i<qps.length;i++){qpHtml+='<button class="qpb" onclick="qpSend('+c.id+','+i+')">'+qps[i].l+'</button>';}
+  $('p-ai')._qps=qps;$('p-ai')._cid=c.id;
+  $('p-ai').innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px"><h2 class="serif" style="font-size:22px;font-weight:400">AI Menu Assistant</h2><button class="btn" onclick="clearAI('+c.id+')" style="font-size:11px;padding:4px 10px"><i class="ti ti-refresh" style="font-size:11px"></i> New conversation</button></div>'+
+    picker+ctx+'<div class="card" style="margin-bottom:10px"><div class="aichat" id="aichat">'+msgs+'</div></div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">'+qpHtml+'</div>'+
+    '<div class="aiinput"><textarea id="aiinp" placeholder="Ask for menu ideas, allergy checks, substitutions..." onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();sendAI('+c.id+')}" rows="2"></textarea><button class="btn bs" onclick="sendAI('+c.id+')" style="align-self:flex-end;padding:9px 14px"><i class="ti ti-arrow-up" style="font-size:14px"></i></button></div>';
+  setTimeout(function(){var el=$('aichat');if(el)el.scrollTop=el.scrollHeight;},50);
+}
+function clearAI(cid){S.aiH[cid]=[];var c=gc(cid);if(c)buildAIIntro(c);rAI();}
+function qpSend(cid,idx){var qps=$('p-ai')._qps;if(!qps||!qps[idx])return;var i=$('aiinp');if(i)i.value=qps[idx].p;sendAI(cid);}
+function sendAI(cid){
+  var inp=$('aiinp');var t=inp?inp.value.trim():'';if(!t)return;if(inp)inp.value='';
+  var c=gc(cid);if(!c)return;
+  if(!S.aiH[c.id])S.aiH[c.id]=[];
+  S.aiH[c.id].push({role:'user',content:t});
+  var chat=$('aichat');
+  if(chat){chat.innerHTML+='<div class="aim user">'+t.replace(/\n/g,'<br>')+'</div>';var th=document.createElement('div');th.className='aim ai thinking';th.id='aith';th.textContent='Thinking about '+c.name.replace('The ','').replace(' Family','')+'...';chat.appendChild(th);chat.scrollTop=chat.scrollHeight;}
+  var msgs=[];var hist=S.aiH[c.id];
+  for(var i=0;i<hist.length;i++){if(hist[i].role==='user'||hist[i].role==='assistant')msgs.push({role:hist[i].role,content:hist[i].content||''});}
+  fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:buildSP(c),messages:msgs})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var reply=(data.content&&data.content[0])?data.content[0].text:'Sorry, could not generate a response.';
+      var isFlag=reply.indexOf('⚠️ ALLERGY FLAG')>=0;
+      S.aiH[c.id].push({role:'assistant',content:reply,flag:isFlag});
+      var aith=$('aith');if(aith)aith.parentNode.removeChild(aith);
+      if(chat){var el=document.createElement('div');el.className='aim '+(isFlag?'flag':'ai');el.innerHTML=reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');chat.appendChild(el);chat.scrollTop=chat.scrollHeight;}
+    })
+    .catch(function(){
+      var aith=$('aith');if(aith)aith.parentNode.removeChild(aith);
+      if(chat){var el=document.createElement('div');el.className='aim ai';el.textContent='Connection error — please try again.';chat.appendChild(el);}
+    });
+}
+
+// ── SHARED RECIPE BANK ────────────────────────────────────────────────────────
+function rRec(){
+  if(S.recEdit!==null&&S.recEdit!==undefined){rRecEditor();return;}
+  var filter=S.recFilter||'All';
+  var tagFilter=S.recTagFilter||[];
+  var list=[];
+  for(var i=0;i<RECIPES.length;i++){
+    var r=RECIPES[i];
+    if(filter!=='All'&&r.mealType!==filter)continue;
+    if(tagFilter.length){var match=true;for(var j=0;j<tagFilter.length;j++){var found=false;if(r.tags){for(var k=0;k<r.tags.length;k++){if(r.tags[k]===tagFilter[j]){found=true;break;}}}if(!found){match=false;break;}}if(!match)continue;}
+    list.push({r:r,i:i});
+  }
+  var mtBtns='';var allMts=['All','Breakfast','Lunch','Dinner','Snack'];
+  for(var i=0;i<allMts.length;i++) mtBtns+='<button class="btn'+(filter===allMts[i]?' bs':'')+'" onclick="S.recFilter=\''+allMts[i]+'\';S.recEdit=null;rRec()">'+allMts[i]+'</button>';
+  var tagBtns='';for(var i=0;i<DIET_TAGS.length;i++){var active=tagFilter.indexOf(DIET_TAGS[i])>=0;tagBtns+='<button class="rec-tag'+(active?' on':'')+'" onclick="toggleRecTag(\''+DIET_TAGS[i]+'\')">'+DIET_TAGS[i]+'</button>';}
+  var recHtml='';
+  for(var i=0;i<list.length;i++){
+    var r=list[i].r;var ri=list[i].i;
+    var tagHtml='';if(r.tags){for(var j=0;j<r.tags.length;j++)tagHtml+='<span class="tag tg">'+esc(r.tags[j])+'</span>';}
+    recHtml+='<div class="card" style="cursor:pointer" onclick="S.recEdit='+ri+';rRec()">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
+        '<div><div style="font-weight:500;font-size:14px">'+esc(r.name)+'</div>'+
+        '<div style="font-size:12px;color:var(--warm)">Serves '+esc(r.servings||'')+(r.prepTime?' · Prep '+esc(r.prepTime):'')+(r.cookTime?' · Cook '+esc(r.cookTime):'')+'</div></div>'+
+        '<div>'+mtb(r.mealType||'Dinner')+tagHtml+'</div>'+
+      '</div>'+
+      (r.addedBy?'<div style="font-size:11px;color:var(--warm);margin-top:6px">Added by '+esc(r.addedBy)+(r.versions&&r.versions.length?' · '+r.versions.length+' version(s)':'')+'</div>':'') +
+    '</div>';
+  }
+  $('p-recipes').innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">'+
+      '<h2 class="serif" style="font-size:22px;font-weight:400">Recipe bank <span style="font-size:14px;color:var(--warm);font-family:\'Jost\',sans-serif;font-weight:400">— shared team library</span></h2>'+
+      '<button class="btn bs" onclick="newRec()"><i class="ti ti-plus" style="font-size:13px"></i> Add recipe</button>'+
+    '</div>'+
+    '<div style="font-size:12px;color:var(--warm);margin-bottom:1rem">All recipes added here are visible to Brandy, Riley, Esther, and Brittany. Search by meal type or dietary tag.</div>'+
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+mtBtns+'</div>'+
+    '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem">'+tagBtns+'</div>'+
+    (list.length?recHtml:'<div class="empty">No recipes match this filter. Add the first one!</div>');
+}
+function toggleRecTag(t){
+  if(!S.recTagFilter)S.recTagFilter=[];
+  var idx=S.recTagFilter.indexOf(t);
+  if(idx>=0)S.recTagFilter.splice(idx,1);else S.recTagFilter.push(t);
+  S.recEdit=null;rRec();
+}
+function newRec(){
+  var id=Date.now();
+  var u=tu(S.uid);
+  RECIPES.push({id:id,name:'New recipe',servings:'4',prepTime:'',cookTime:'',mealType:'Dinner',tags:[],ingredients:'',instructions:'',notes:'',addedBy:(u?u.name:''),versions:[{date:tod(),note:'Created'}]});
+  S.recEdit=RECIPES.length-1;rRec();
+}
+function rRecEditor(){
+  var r=RECIPES[S.recEdit];if(!r)return;
+  var mtopts='';for(var i=0;i<MTYPES.length;i++)mtopts+='<option'+(MTYPES[i]===r.mealType?' selected':'')+'>'+MTYPES[i]+'</option>';
+  var tagBtns='';for(var i=0;i<DIET_TAGS.length;i++){var active=(r.tags||[]).indexOf(DIET_TAGS[i])>=0;tagBtns+='<button class="rec-tag'+(active?' on':'')+'" onclick="toggleRecEdTag(\''+DIET_TAGS[i]+'\')">'+DIET_TAGS[i]+'</button>';}
+  var versHtml='';var vers=r.versions||[];for(var i=0;i<vers.length;i++)versHtml+='<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--bdr);font-size:13px"><span>'+esc(vers[i].date)+'</span><span style="color:var(--warm)">'+esc(vers[i].note)+'</span></div>';
+  $('p-recipes').innerHTML=
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem"><button class="btn" onclick="S.recEdit=null;rRec()"><i class="ti ti-arrow-left" style="font-size:13px"></i> Recipe bank</button></div>'+
+    '<div class="card">'+
+      '<div class="g2"><div class="fi"><label>Recipe name</label><input id="rn-name" value="'+esc(r.name)+'" oninput="RECIPES['+S.recEdit+'].name=this.value"></div>'+
+      '<div class="fi"><label>Meal type</label><select id="rn-mt" onchange="RECIPES['+S.recEdit+'].mealType=this.value">'+mtopts+'</select></div></div>'+
+      '<div class="g2"><div class="fi"><label>Serves</label><input value="'+esc(r.servings||'')+'" oninput="RECIPES['+S.recEdit+'].servings=this.value"></div>'+
+      '<div class="fi"><label>Prep time</label><input value="'+esc(r.prepTime||'')+'" oninput="RECIPES['+S.recEdit+'].prepTime=this.value"></div></div>'+
+      '<div class="cl">Dietary tags (select all that apply)</div>'+
+      '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem">'+tagBtns+'</div>'+
+      '<div class="g2"><div class="fi"><label>Ingredients</label><textarea style="min-height:120px" oninput="RECIPES['+S.recEdit+'].ingredients=this.value">'+esc(r.ingredients||'')+'</textarea></div>'+
+      '<div class="fi"><label>Instructions</label><textarea style="min-height:120px" oninput="RECIPES['+S.recEdit+'].instructions=this.value">'+esc(r.instructions||'')+'</textarea></div></div>'+
+      '<div class="fi" style="margin-bottom:12px"><label>Chef notes & storage tips</label><textarea oninput="RECIPES['+S.recEdit+'].notes=this.value">'+esc(r.notes||'')+'</textarea></div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bs" onclick="saveRecVer()"><i class="ti ti-device-floppy"></i> Save version</button><button class="btn br" onclick="delRec()"><i class="ti ti-trash"></i> Delete</button></div>'+
+    '</div>'+
+    '<div class="card"><div class="cl">Version history</div>'+versHtml+'</div>';
+}
+function toggleRecEdTag(t){
+  var r=RECIPES[S.recEdit];if(!r)return;
+  if(!r.tags)r.tags=[];
+  var idx=r.tags.indexOf(t);if(idx>=0)r.tags.splice(idx,1);else r.tags.push(t);
+  rRecEditor();
+}
+function saveRecVer(){var r=RECIPES[S.recEdit];if(!r)return;var n=prompt('Note for this version:','Updated');if(!n)return;if(!r.versions)r.versions=[];r.versions.push({date:tod(),note:n});rRecEditor();}
+function delRec(){if(!confirm('Delete this recipe?'))return;RECIPES.splice(S.recEdit,1);S.recEdit=null;rRec();}
+
+// ── MESSAGES PAGE ─────────────────────────────────────────────────────────────
+function rMsgs(){
+  var cl=myC();var c=null;
+  if(S.wsCid){for(var i=0;i<cl.length;i++){if(cl[i].id===S.wsCid){c=cl[i];break;}}}
+  if(!c&&cl.length)c=cl[0];
+  if(!c){$('p-messages').innerHTML='<div class="empty">No clients to message.</div>';return;}
+  var tabs='';if(cl.length>1){tabs='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem">';for(var i=0;i<cl.length;i++){tabs+='<button class="btn'+(cl[i].id===c.id?' bs':'')+'" onclick="S.wsCid='+cl[i].id+';rMsgs()">'+esc(cl[i].contact)+'</button>';}tabs+='</div>';}
+  $('p-messages').innerHTML='<h2 class="serif" style="font-size:22px;font-weight:400;margin-bottom:1rem">Messages</h2>'+tabs+'<div class="card"><div style="font-weight:500;margin-bottom:12px">'+(S.role==='client'?'Your chef — '+cn(c.chefId):'Client — '+esc(c.contact))+'</div>'+rMsgTab(c)+'</div>';
+  setTimeout(function(){var t=$('mthread');if(t)t.scrollTop=t.scrollHeight;},50);
+}
+
+// ── TEAM ──────────────────────────────────────────────────────────────────────
+function rTeam(){
+  var byR={dietitian:[],chef:[],manager:[],client:[]};
+  for(var i=0;i<TEAM.length;i++){var u=TEAM[i];if(byR[u.role])byR[u.role].push(u);}
+  var lbl={dietitian:'Dietitians',chef:'Chefs',manager:'Client Experience Managers',client:'Clients'};
+  var html='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem"><h2 class="serif" style="font-size:22px;font-weight:400">Team & roles</h2><button class="btn bs" onclick="addTeamM()"><i class="ti ti-plus" style="font-size:13px"></i> Add</button></div>';
+  var roles=['dietitian','chef','manager','client'];
+  for(var ri=0;ri<roles.length;ri++){
+    var role=roles[ri];var members=byR[role];if(!members.length)continue;
+    html+='<div class="card"><div class="cl">'+lbl[role]+'</div>';
+    for(var i=0;i<members.length;i++){
+      var u=members[i];
+      html+='<div class="trow"><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:'+(u.color||'var(--sage-l)')+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#2c2c2a">'+u.name.charAt(0)+'</div><div><div style="font-weight:500;font-size:13px">'+esc(u.name)+'</div><div style="font-size:12px;color:var(--warm)">'+esc(u.email||'')+'</div></div></div>' +
+        '<div style="display:flex;gap:6px"><button class="btn" style="padding:4px 8px;font-size:11px" onclick="editTeamM(\''+u.id+'\')"><i class="ti ti-edit"></i></button>'+(u.id!==S.uid?'<button class="btn br" style="padding:4px 8px;font-size:11px" onclick="rmTeam(\''+u.id+'\')"><i class="ti ti-trash"></i></button>':'')+'</div></div>';
+    }
+    html+='</div>';
+  }
+  $('p-team').innerHTML=html;
+}
+function addTeamM(){openM('<h3 class="serif">Add team member</h3><div class="fg"><label>Full name</label><input id="tm-n" placeholder="Full name"></div><div class="fg"><label>Email</label><input id="tm-e" type="email"></div><div class="fg"><label>Password</label><input id="tm-p" type="password" placeholder="Temporary password"></div><div class="fg"><label>Role</label><select id="tm-r"><option value="dietitian">Dietitian</option><option value="chef">Chef</option><option value="manager">Client Experience Manager</option><option value="client">Client</option></select></div><button class="btn bd bfull" onclick="saveTM()">Add</button><button class="mlink" onclick="closeM()">Cancel</button>');}
+function saveTM(){var n=$('tm-n').value.trim();var e=$('tm-e').value.trim().toLowerCase();var p=$('tm-p').value;var r=$('tm-r').value;if(!n||!e){alert('Name and email required.');return;}for(var i=0;i<TEAM.length;i++){if(TEAM[i].email===e){alert('Email already exists.');return;}}TEAM.push({id:'u'+Date.now(),name:n,role:r,email:e,password:p||'changeme',color:CCOLORS[TEAM.length%CCOLORS.length]});closeM();rTeam();}
+function editTeamM(id){var u=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].id===id){u=TEAM[i];break;}}if(!u)return;openM('<h3 class="serif">Edit '+esc(u.name)+'</h3><div class="fg"><label>Full name</label><input id="em-n" value="'+esc(u.name)+'"></div><div class="fg"><label>Email</label><input id="em-e" value="'+esc(u.email||'')+'"></div><div class="fg"><label>New password (blank to keep)</label><input id="em-p" type="password" placeholder="Leave blank to keep"></div><div class="fg"><label>Role</label><select id="em-r"><option value="dietitian"'+(u.role==='dietitian'?' selected':'')+'>Dietitian</option><option value="chef"'+(u.role==='chef'?' selected':'')+'>Chef</option><option value="manager"'+(u.role==='manager'?' selected':'')+'>Client Experience Manager</option><option value="client"'+(u.role==='client'?' selected':'')+'>Client</option></select></div><button class="btn bd bfull" onclick="saveETM(\''+id+'\')">Save</button><button class="mlink" onclick="closeM()">Cancel</button>');}
+function saveETM(id){var u=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].id===id){u=TEAM[i];break;}}if(!u)return;u.name=$('em-n').value;u.email=$('em-e').value.toLowerCase();u.role=$('em-r').value;var p=$('em-p').value;if(p)u.password=p;closeM();rTeam();}
+function rmTeam(id){var u=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].id===id){u=TEAM[i];break;}}if(!u)return;var asgn=[];for(var i=0;i<CLIENTS.length;i++){if(CLIENTS[i].chefId===id)asgn.push(CLIENTS[i].name);}if(!confirm(asgn.length?'Remove '+u.name+'? Assigned to: '+asgn.join(', '):('Remove '+u.name+'?')))return;var nt=[];for(var i=0;i<TEAM.length;i++){if(TEAM[i].id!==id)nt.push(TEAM[i]);}TEAM=nt;rTeam();}
+
+// ── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+function rNotif(){
+  var mine=[];
+  for(var i=0;i<NOTIFS.length;i++){
+    var n=NOTIFS[i];var inR=false;var inU=false;
+    for(var j=0;j<n.forRoles.length;j++){if(n.forRoles[j]===S.role){inR=true;break;}}
+    for(var j=0;j<n.forUsers.length;j++){if(n.forUsers[j]===S.uid){inU=true;break;}}
+    if(inR||inU)mine.push({n:n,i:i});
+  }
+  for(var i=0;i<mine.length;i++) mine[i].n.unread=false;
+  updDot();
+  var html='<h2 class="serif" style="font-size:22px;font-weight:400;margin-bottom:1rem">Notifications</h2><div class="card">';
+  if(!mine.length){html+='<div class="empty">No notifications yet.</div>';}
+  else {
+    for(var i=0;i<mine.length;i++){
+      var n=mine[i].n;
+      var nav=n.navTarget?'onclick="handleNotifNav('+mine[i].i+')"':'';
+      html+='<div class="nitem" '+nav+'><div class="nico" style="background:'+(n.color||'var(--sage-l)')+'"><i class="ti '+(n.icon||'ti-bell')+'" style="color:'+(n.ic||'var(--sage-d)')+'"></i></div><div><div style="font-size:13px;font-weight:500">'+esc(n.text)+'</div><div style="font-size:11px;color:var(--warm);margin-top:2px">'+esc(n.time||'')+(n.navTarget?'<span style="color:var(--sage-d);margin-left:8px">Tap to view →</span>':'')+'</div></div></div>';
+    }
+  }
+  html+='</div>';
+  $('p-notifications').innerHTML=html;
+}
+function handleNotifNav(idx){
+  var n=NOTIFS[idx];if(!n||!n.navTarget)return;
+  var nav=n.navTarget;
+  if(nav.wsCid)S.wsCid=nav.wsCid;
+  if(nav.wsTab)S.wsTab=nav.wsTab;
+  go(nav.page||'clients');
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openM(html){$('mbox').innerHTML=html;$('mov').classList.add('open');}
+function closeM(){$('mov').classList.remove('open');}
+$('mov').addEventListener('click',function(e){if(e.target===this)closeM();});
+
+</script>
+</body>
+</html>
