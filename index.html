@@ -1503,7 +1503,7 @@ function sendAI(cid){
   fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:buildSP(c),messages:msgs})})
     .then(function(r){return r.json();})
     .then(function(data){
-      var reply=(data.content&&data.content[0])?data.content[0].text:'Sorry, could not generate a response.';
+      var parsed = typeof data === 'string' ? JSON.parse(data) : data; var reply=(parsed.content&&parsed.content[0])?parsed.content[0].text:'Sorry, could not generate a response. Error: '+JSON.stringify(parsed);
       var isFlag=reply.indexOf('⚠️ ALLERGY FLAG')>=0;
       S.aiH[c.id].push({role:'assistant',content:reply,flag:isFlag});
       var aith=$('aith');if(aith)aith.parentNode.removeChild(aith);
