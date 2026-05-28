@@ -217,6 +217,7 @@ body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--warm-d);f
   <div class="navbar" id="navbar"></div>
   <div class="pages">
     <div id="p-calendar" class="page"></div>
+    <div id="p-hours" class="page"></div>
     <div id="p-clients" class="page"></div>
     <div id="p-workspace" class="page"></div>
     <div id="p-ai" class="page"></div>
@@ -243,17 +244,17 @@ var DAYSSHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var WDAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 var CCOLORS = ['#c0dd97','#9FE1CB','#B5D4F4','#FAC775','#AFA9EC'];
 var MCOLORS = ['#5a6e50','#0c447c','#633806','#791f1f','#5a3e7a','#2d6e5a'];
-var MTYPES = ['Breakfast','Lunch','Dinner','Snack'];
+var MTYPES = ['Dinner','Breakfast','Lunch','Snack'];
 var PKGS = ['Family style','Grab & go','Individual portions'];
 var DIET_TAGS = ['Vegan','Vegetarian','Pescatarian','Gluten-free','Dairy-free','Nut-free','Egg-free','Kid-friendly'];
 var NAVCFG = {
-  dietitian: ['calendar','clients','workspace','ai','recipes','team','notifications'],
-  chef: ['calendar','clients','workspace','ai','recipes','notifications'],
-  manager: ['calendar','clients','messages','notifications'],
+  dietitian: ['calendar','clients','workspace','ai','recipes','team','hours','notifications'],
+  chef: ['calendar','clients','workspace','ai','recipes','hours','notifications'],
+  manager: ['calendar','clients','hours','messages','notifications'],
   client: ['workspace','messages','notifications']
 };
-var NAVLBL = {calendar:'Calendar',clients:'Clients',workspace:'Menu & Workflow',ai:'AI Assistant',recipes:'Recipes',team:'Team & Roles',messages:'Messages',notifications:'Notifications'};
-var NAVICO = {calendar:'ti-calendar',clients:'ti-users',workspace:'ti-git-branch',ai:'ti-robot',recipes:'ti-book',team:'ti-settings',messages:'ti-message',notifications:'ti-bell'};
+var NAVLBL = {calendar:'Calendar',clients:'Clients',workspace:'Menu & Workflow',ai:'AI Assistant',recipes:'Recipes',team:'Team & Roles',hours:'Hours',messages:'Messages',notifications:'Notifications'};
+var NAVICO = {calendar:'ti-calendar',clients:'ti-users',workspace:'ti-git-branch',ai:'ti-robot',recipes:'ti-book',team:'ti-settings',hours:'ti-clock',messages:'ti-message',notifications:'ti-bell'};
 
 // ── CHECKLIST DATA ────────────────────────────────────────────────────────────
 var CL = [
@@ -333,6 +334,41 @@ var NOTIFS = [];
 // ── SHARED RECIPE BANK ────────────────────────────────────────────────────────
 var RECIPES = [];
 
+// ── DATA PERSISTENCE ─────────────────────────────────────────────────────────
+function saveData() {
+  try {
+    var data = {
+      CLIENTS: CLIENTS,
+      TEAM: TEAM,
+      RECIPES: RECIPES,
+      NOTIFS: NOTIFS.slice(0, 50),
+      TIME_LOG: TIME_LOG,
+      _clockInProgress: _clockInProgress
+    };
+    localStorage.setItem('thetable_data', JSON.stringify(data));
+  } catch(e) { console.log('Save error:', e); }
+}
+function loadData() {
+  try {
+    var raw = localStorage.getItem('thetable_data');
+    if (!raw) return;
+    var data = JSON.parse(raw);
+    if (data.CLIENTS && data.CLIENTS.length) CLIENTS = data.CLIENTS;
+    if (data.TEAM && data.TEAM.length) TEAM = data.TEAM;
+    if (data.RECIPES) RECIPES = data.RECIPES;
+    if (data.NOTIFS) NOTIFS = data.NOTIFS;
+    if (data.TIME_LOG) TIME_LOG = data.TIME_LOG;
+    if (data._clockInProgress) _clockInProgress = data._clockInProgress;
+  } catch(e) { console.log('Load error:', e); }
+}
+// Auto-save whenever data changes
+function saveAndRender(fn) { return function() { var r = fn.apply(this, arguments); saveData(); return r; }; }
+loadData();
+
+// ── TIME LOG ─────────────────────────────────────────────────────────────────
+var TIME_LOG = []; // {id, userId, userName, clientId, clientName, clockIn, clockOut, duration, notes, date}
+var _clockInProgress = null; // {userId, clientId, startTime}
+
 // ── DRAG STATE ────────────────────────────────────────────────────────────────
 var _dragMeal = null;
 var _dragDay = null;
@@ -390,7 +426,7 @@ function pkb(p) {
   return '<span class="pbadge ' + cls + '">' + (p || '') + '</span>';
 }
 function sb(s) {
-  var m = {draft:['sd','Draft'],pending:['sp','Awaiting sign-off'],approved:['sa','Approved'],sent:['ss','Sent to client'],revised:['sr','Client revised'],complete:['sc','Complete']};
+  var m = {draft:['sd','Draft'],pending:['sp','Awaiting dietitian'],approved:['sa','Dietitian approved'],sent:['ss','Awaiting client'],revised:['sr','Client revised'],client_approved:['ss','Client approved'],grocery_ready:['sa','Grocery ready'],complete:['sc','Complete']};
   var pair = m[s] || ['sd','Draft'];
   return '<span class="sbadge ' + pair[0] + '">' + pair[1] + '</span>';
 }
@@ -447,6 +483,33 @@ function doLogin() {
   buildNav(); updDot();
   var firstPage = NAVCFG[S.role] ? NAVCFG[S.role][0] : 'clients';
   go(firstPage);
+  // Prompt password change on first login
+  var pwKey = 'pw_changed_' + u.id;
+  if (!localStorage.getItem(pwKey)) {
+    setTimeout(function() {
+      openM('<h3 class="serif">Welcome, ' + u.name.split(' ')[0] + '!</h3>' +
+        '<p style="font-size:13px;color:var(--warm);margin-bottom:1.25rem">You\'re signed in with a temporary password. We recommend setting a personal password now.</p>' +
+        '<div class="fg"><label>New password</label><input type="password" id="np-1" placeholder="Choose a password"></div>' +
+        '<div class="fg"><label>Confirm password</label><input type="password" id="np-2" placeholder="Confirm password"></div>' +
+        '<button class="btn bd bfull" onclick="saveNewPw(\'' + u.id + '\')">Set my password</button>' +
+        '<button class="mlink" onclick="skipPw(\'' + u.id + '\')">Skip for now</button>');
+    }, 800);
+  }
+}
+function saveNewPw(uid) {
+  var p1 = $('np-1').value; var p2 = $('np-2').value;
+  if (!p1) { alert('Please enter a password.'); return; }
+  if (p1 !== p2) { alert('Passwords don\'t match.'); return; }
+  if (p1.length < 6) { alert('Password must be at least 6 characters.'); return; }
+  var u = tu(uid); if (!u) return;
+  u.password = p1;
+  localStorage.setItem('pw_changed_' + uid, '1');
+  saveData(); closeM();
+  alert('Password updated successfully!');
+}
+function skipPw(uid) {
+  localStorage.setItem('pw_changed_' + uid, '1');
+  closeM();
 }
 function signOut() { $('app').classList.remove('visible'); $('vlogin').classList.remove('hidden'); $('lemail').value = ''; $('lpw').value = ''; }
 $('sinbtn').addEventListener('click', doLogin);
@@ -471,7 +534,7 @@ function go(name) {
   for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
   var pg = $('p-' + name); if (pg) pg.classList.add('active');
   var nb = $('nb-' + name); if (nb) nb.classList.add('active');
-  var fns = {calendar:rCal,clients:rClients,workspace:rWS,ai:rAI,recipes:rRec,team:rTeam,messages:rMsgs,notifications:rNotif};
+  var fns = {calendar:rCal,clients:rClients,workspace:rWS,ai:rAI,recipes:rRec,team:rTeam,hours:rHours,messages:rMsgs,notifications:rNotif};
   if (fns[name]) fns[name]();
 }
 
@@ -748,7 +811,7 @@ function saveNewClient() {
       'Through your portal you can view your weekly menu and grocery list, request changes, leave feedback for your chef, and message us directly.\n\n' +
       'Welcome to The Table!\n' + CFG.fromName);
   }
-  closeM(); rClients();
+  saveData(); closeM(); rClients();
 }
 function editClientM(id) {
   var c = gc(id); if (!c) return;
@@ -770,7 +833,7 @@ function saveEditClient(id) {
   var c = gc(id); if (!c) return;
   c.name = $('ec-n').value; c.contact = $('ec-c').value; c.chefId = $('ec-ch').value;
   c.serviceDay = parseInt($('ec-d').value); c.safe = $('ec-sf').value; c.aversions = $('ec-av').value; c.notes = $('ec-no').value;
-  closeM(); rClients();
+  saveData(); closeM(); rClients();
 }
 
 // ── WORKSPACE ─────────────────────────────────────────────────────────────────
@@ -865,17 +928,87 @@ function rProfile(c) {
       (canEdit ? '<button class="btn bs" style="font-size:11px;padding:4px 10px" onclick="addMemM('+c.id+')"><i class="ti ti-plus" style="font-size:11px"></i> Add member</button>' : '') +
     '</div>' +
     '<div class="mgrid">' + (mcards || '<p style="font-size:13px;color:var(--warm)">No members yet.</p>') + '</div>' +
-    '<div class="card"><div class="cl">Household preferences</div>' +
+    '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="cl" style="margin:0">Household preferences</div>' +
+      (canEdit || S.role==='client' ? '<button class="btn bs" style="font-size:11px;padding:4px 10px" onclick="editPrefsM('+c.id+')"><i class="ti ti-edit" style="font-size:11px"></i> Edit</button>' : '') +
+      '</div>' +
       '<div class="g2"><div><div style="font-size:11px;color:var(--warm);margin-bottom:3px">Safe foods</div><div style="font-size:13px">'+(c.safe||'—')+'</div></div>' +
       '<div><div style="font-size:11px;color:var(--warm);margin-bottom:3px">Aversions</div><div style="font-size:13px">'+(c.aversions||'—')+'</div></div></div>' +
       '<div><div style="font-size:11px;color:var(--warm);margin-bottom:3px">Chef notes</div><div style="font-size:13px">'+(c.notes||'—')+'</div></div>' +
       (c.favoriteRestaurants ? '<div style="margin-top:8px"><div style="font-size:11px;color:var(--warm);margin-bottom:3px">Favorite restaurants</div><div style="font-size:13px">'+esc(c.favoriteRestaurants)+'</div></div>' : '') +
     '</div>' +
-    '<div class="card"><div class="cl">Weekly service plan</div>' + spHtml + '</div>' +
+    '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="cl" style="margin:0">Weekly service plan</div>' +
+      (canEdit ? '<button class="btn bs" style="font-size:11px;padding:4px 10px" onclick="editSpM('+c.id+')"><i class="ti ti-edit" style="font-size:11px"></i> Edit</button>' : '') +
+      '</div>' + spHtml + '</div>' +
     (c.rotationBank && c.rotationBank.length ? '<div class="card"><div class="cl">Rotation bank — client approved</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+(function(){ var s=''; for(var i=0;i<c.rotationBank.length;i++) s+='<span class="tag tg">✓ '+esc(c.rotationBank[i].name)+'</span>'; return s; })()+'</div></div>' : '') +
     (c.avoidBank && c.avoidBank.length ? '<div class="card"><div class="cl">Do not repeat</div><div style="display:flex;flex-wrap:wrap;gap:6px">'+(function(){ var s=''; for(var i=0;i<c.avoidBank.length;i++) s+='<span class="tag tr2">✗ '+esc(c.avoidBank[i].name)+'</span>'; return s; })()+'</div></div>' : '');
 }
 
+function editSpM(cid) {
+  var c = gc(cid); if(!c) return;
+  var sp = c.servicePlan || [];
+  var rows = '';
+  for(var i=0;i<sp.length;i++) {
+    var s=sp[i];
+    var mtopts='';for(var j=0;j<MTYPES.length;j++) mtopts+='<option'+(MTYPES[j]===s.mealType?' selected':'')+'>'+MTYPES[j]+'</option>';
+    var pkopts='';for(var j=0;j<PKGS.length;j++) pkopts+='<option'+(PKGS[j]===s.packaging?' selected':'')+'>'+PKGS[j]+'</option>';
+    rows+='<div style="background:var(--cream);border:0.5px solid var(--bdr);border-radius:8px;padding:10px;margin-bottom:8px">' +
+      '<div class="g2"><div class="fi"><label>Meal type</label><select id="sp-mt-'+i+'">'+mtopts+'</select></div>' +
+      '<div class="fi"><label>Qty/week</label><input id="sp-qty-'+i+'" type="number" value="'+(s.qty||0)+'" min="1" max="14"></div></div>' +
+      '<div class="g2"><div class="fi"><label>For who</label><input id="sp-who-'+i+'" value="'+esc(s.who||'')+'"></div>' +
+      '<div class="fi"><label>Servings</label><input id="sp-serv-'+i+'" value="'+esc(s.servings||'')+'"></div></div>' +
+      '<div class="g2"><div class="fi"><label>Packaging</label><select id="sp-pkg-'+i+'">'+pkopts+'</select></div>' +
+      '<div class="fi"><label>Notes</label><input id="sp-note-'+i+'" value="'+esc(s.notes||'')+'"></div></div>' +
+      '<button class="btn br" style="font-size:11px;padding:3px 8px;margin-top:4px" onclick="removeSpRow('+cid+','+i+')">Remove</button>' +
+    '</div>';
+  }
+  openM('<h3 class="serif">Edit service plan</h3>' + rows +
+    '<button class="btn bs bfull" style="margin-bottom:1rem" onclick="addSpRow('+cid+')"><i class="ti ti-plus"></i> Add service item</button>' +
+    '<button class="btn bd bfull" onclick="saveSp('+cid+','+sp.length+')">Save service plan</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function addSpRow(cid) {
+  var c=gc(cid);if(!c)return;
+  if(!c.servicePlan)c.servicePlan=[];
+  c.servicePlan.push({mealType:'Dinner',qty:5,who:'Whole family',servings:'4-6',packaging:'Family style',notes:''});
+  editSpM(cid);
+}
+function removeSpRow(cid,idx) {
+  var c=gc(cid);if(!c||!c.servicePlan)return;
+  c.servicePlan.splice(idx,1);
+  editSpM(cid);
+}
+function saveSp(cid,len) {
+  var c=gc(cid);if(!c)return;
+  for(var i=0;i<len;i++) {
+    if(!c.servicePlan[i])continue;
+    var mt=$('sp-mt-'+i);var qty=$('sp-qty-'+i);var who=$('sp-who-'+i);var serv=$('sp-serv-'+i);var pkg=$('sp-pkg-'+i);var note=$('sp-note-'+i);
+    if(mt)c.servicePlan[i].mealType=mt.value;
+    if(qty)c.servicePlan[i].qty=parseInt(qty.value)||0;
+    if(who)c.servicePlan[i].who=who.value;
+    if(serv)c.servicePlan[i].servings=serv.value;
+    if(pkg)c.servicePlan[i].packaging=pkg.value;
+    if(note)c.servicePlan[i].notes=note.value;
+  }
+  saveData(); closeM(); rWS();
+}
+function editPrefsM(cid) {
+  var c = gc(cid); if(!c) return;
+  openM('<h3 class="serif">Edit preferences — '+esc(c.name)+'</h3>' +
+    '<div class="fg"><label>Safe foods</label><input id="ep-sf" value="'+esc(c.safe||'')+'" placeholder="e.g. Plain proteins, GF pasta, fruit"></div>' +
+    '<div class="fg"><label>Aversions & dislikes</label><input id="ep-av" value="'+esc(c.aversions||'')+'" placeholder="e.g. Mixed textures, sauces touching food"></div>' +
+    '<div class="fg"><label>Chef notes</label><textarea id="ep-no" style="min-height:70px" placeholder="e.g. Sauce always on side. Adults get seasoned, kids plain.">'+esc(c.notes||'')+'</textarea></div>' +
+    '<div class="fg"><label>Favorite restaurants (reference for flavor preferences)</label><input id="ep-fr" value="'+esc(c.favoriteRestaurants||'')+'" placeholder="e.g. Chipotle, Chick-fil-A"></div>' +
+    '<button class="btn bd bfull" onclick="savePrefs('+cid+')">Save preferences</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function savePrefs(cid) {
+  var c = gc(cid); if(!c) return;
+  c.safe = $('ep-sf').value;
+  c.aversions = $('ep-av').value;
+  c.notes = $('ep-no').value;
+  c.favoriteRestaurants = $('ep-fr').value;
+  saveData(); closeM(); rWS();
+}
 function addMemM(cid) {
   openM('<h3 class="serif">Add family member</h3>' +
     '<div class="fg"><label>Full name</label><input id="nm-n" placeholder="e.g. Sarah, Tom, Lily"></div>' +
@@ -895,7 +1028,7 @@ function saveMem(cid) {
   var alRaw = $('nm-al').value.split(',');
   var al = []; for (var i = 0; i < alRaw.length; i++) { var t = alRaw[i].trim(); if (t) al.push(t); }
   c.familyMembers.push({id:'fm'+Date.now(), name:n, role:role, age:age, allergies:al, notes:$('nm-no').value});
-  closeM(); rWS();
+  saveData(); closeM(); rWS();
 }
 function editMemM(cid, mid) {
   var c = gc(cid); var m = null;
@@ -934,13 +1067,15 @@ function delMem(cid, mid) {
 
 // ── MENU WORKFLOW ─────────────────────────────────────────────────────────────
 function rMenu(c) {
-  var statuses = ['pending','approved','sent','revised','complete'];
+  // 7-step workflow: draft → pending → approved → sent → client_approved → grocery_ready → complete
   var steps = [
-    {l:'Build menu', done: statuses.indexOf(c.menuStatus) >= 0, act: c.menuStatus==='draft'},
-    {l:'Dietitian OK', done: ['approved','sent','revised','complete'].indexOf(c.menuStatus)>=0, act: c.menuStatus==='pending'},
-    {l:'Send to client', done: ['sent','revised','complete'].indexOf(c.menuStatus)>=0, act: c.menuStatus==='approved'},
-    {l:'Client revises', done: c.menuStatus==='complete', act: c.menuStatus==='sent'||c.menuStatus==='revised'},
-    {l:'Service', done: false, act: c.menuStatus==='complete'}
+    {l:'Build menu',       done: c.menuStatus!=='draft', act: c.menuStatus==='draft'},
+    {l:'Dietitian OK',     done: ['approved','sent','client_approved','grocery_ready','complete'].indexOf(c.menuStatus)>=0, act: c.menuStatus==='pending'},
+    {l:'Send to client',   done: ['sent','client_approved','grocery_ready','complete'].indexOf(c.menuStatus)>=0, act: c.menuStatus==='approved'},
+    {l:'Client approves',  done: ['client_approved','grocery_ready','complete'].indexOf(c.menuStatus)>=0, act: c.menuStatus==='sent'||c.menuStatus==='revised'},
+    {l:'Build grocery list', done: ['grocery_ready','complete'].indexOf(c.menuStatus)>=0, act: c.menuStatus==='client_approved'},
+    {l:'Send grocery list', done: c.menuStatus==='complete', act: c.menuStatus==='grocery_ready'},
+    {l:'Service',          done: false, act: c.menuStatus==='complete'}
   ];
   var stepsHtml = '<div class="wf-steps">';
   for (var i=0;i<steps.length;i++) {
@@ -949,10 +1084,12 @@ function rMenu(c) {
   stepsHtml += '</div>';
 
   var acts = '';
-  if (c.menuStatus==='draft' && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bb" onclick="wfAct(\'pending\','+c.id+')">Submit for sign-off</button>';
-  if (c.menuStatus==='pending' && S.role==='dietitian') acts += '<button class="btn bs" onclick="wfAct(\'approved\','+c.id+')"><i class="ti ti-check"></i> Approve</button><button class="btn br" onclick="wfAct(\'draft\','+c.id+')">Send back</button>';
-  if (c.menuStatus==='approved' && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bd" onclick="wfAct(\'sent\','+c.id+')">Send menu + grocery to client</button>';
-  if ((c.menuStatus==='sent'||c.menuStatus==='revised') && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bs" onclick="wfAct(\'complete\','+c.id+')">Finalize</button>';
+  if (c.menuStatus==='draft' && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bb" onclick="wfAct(\'pending\','+c.id+')">Submit for dietitian sign-off</button>';
+  if (c.menuStatus==='pending' && S.role==='dietitian') acts += '<button class="btn bs" onclick="wfAct(\'approved\','+c.id+')"><i class="ti ti-check"></i> Approve menu</button><button class="btn br" onclick="wfAct(\'draft\','+c.id+')">Send back</button>';
+  if (c.menuStatus==='approved' && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bd" onclick="wfAct(\'sent\','+c.id+')">Send menu to client for approval</button>';
+  if (S.role==='client' && (c.menuStatus==='sent'||c.menuStatus==='revised')) acts += '<button class="btn bs" onclick="wfAct(\'client_approved\','+c.id+')"><i class="ti ti-check"></i> Approve this menu</button>';
+  if (c.menuStatus==='client_approved' && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bb" onclick="buildGroceryList('+c.id+')"><i class="ti ti-shopping-cart"></i> Build grocery list</button>';
+  if (c.menuStatus==='grocery_ready' && (S.role==='chef'||S.role==='dietitian')) acts += '<button class="btn bd" onclick="wfAct(\'complete\','+c.id+')">Send grocery list to client</button>';
 
   // Rotation shelf
   var rotShelf = '';
@@ -1005,7 +1142,7 @@ function rMenu(c) {
           '<div style="display:flex;gap:4px">' +
             (clientCanEdit ? '<button class="btn bs" style="padding:2px 6px;font-size:10px" onclick="clientEditMeal(\''+day+'\','+mi+','+c.id+')"><i class="ti ti-edit" style="font-size:10px"></i> Edit</button>' +
               '<button class="btn br" style="padding:2px 6px;font-size:10px" onclick="clientRemoveMeal(\''+day+'\','+mi+','+c.id+')"><i class="ti ti-x" style="font-size:10px"></i> Remove</button>' : '') +
-            (S.role!=='client' ? '<button class="btn" style="padding:2px 5px;font-size:10px" onclick="rmMeal(\''+day+'\','+mi+','+c.id+')"><i class="ti ti-x" style="font-size:10px"></i></button>' : '') +
+            (S.role!=='client' ? '<button class="btn" style="padding:2px 5px;font-size:10px" onclick="rmMeal(\''+day+'\','+mi+','+c.id+')"><i class="ti ti-x" style="font-size:10px"></i></button><button class="btn" style="padding:2px 5px;font-size:10px" onclick="tapMoveMeal(\''+day+'\','+mi+','+c.id+')"><i class="ti ti-arrows-move" style="font-size:10px"></i></button>' : '') +
           '</div>' +
         '</div>' +
         '<div style="display:flex;gap:4px;flex-wrap:wrap">'+mtb(m.mealType)+pkb(m.packaging)+'<span class="tag" style="font-size:10px">'+esc(m.servings||'')+' serv</span>'+(m.forWho?'<span style="font-size:10px;color:var(--warm)">'+esc(m.forWho)+'</span>':'')+'</div>' +
@@ -1020,7 +1157,8 @@ function rMenu(c) {
 
   var grocery = '';
   if (c.groceryList && c.groceryList.length) {
-    grocery = '<div class="card"><div class="cl">Grocery list'+(S.role==='client'?' <span class="tag tg" style="margin-left:6px">Your list</span>':'')+'</div>';
+    var groceryStatus = c.menuStatus==='grocery_ready'?'<span class="tag ta" style="margin-left:6px">Ready to send</span>':c.menuStatus==='complete'?'<span class="tag tg" style="margin-left:6px">Sent to client</span>':'';
+    grocery = '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div class="cl" style="margin:0">Grocery list'+groceryStatus+'</div>'+(S.role==='client'?'<span class="tag tg">Your list</span>':'')+'</div>';
     for (var i=0;i<c.groceryList.length;i++) {
       var gs = c.groceryList[i];
       grocery += '<div class="gst">'+esc(gs.cat)+'</div>';
@@ -1038,6 +1176,36 @@ function rMenu(c) {
     '</div>' + grocery;
 }
 
+// tap-to-move (mobile friendly)
+var _tapMove = null;
+function tapMoveMeal(day, idx, cid) {
+  var c = gc(cid); if(!c) return;
+  var meals = c.weeklyMeals[day] || [];
+  var m = meals[idx]; if(!m) return;
+  _tapMove = {day:day, idx:idx, cid:cid};
+  var html = '<h3 class="serif">Move meal</h3><p style="font-size:13px;color:var(--warm);margin-bottom:1rem"><strong>' + esc(m.name) + '</strong> is on ' + day + '. Move to:</p>';
+  for(var i=0;i<WDAYS.length;i++){
+    if(WDAYS[i] !== day) {
+      html += '<button class="btn bs bfull" style="margin-bottom:6px" id="mv-' + WDAYS[i] + '">' + WDAYS[i] + '</button>';
+    }
+  }
+  html += '<button class="mlink" onclick="_tapMove=null;closeM()">Cancel</button>';
+  openM(html);
+  for(var i=0;i<WDAYS.length;i++){
+    if(WDAYS[i] !== day) {
+      (function(d){ var btn=document.getElementById('mv-'+d); if(btn) btn.onclick=function(){moveMealTo(d);}; })(WDAYS[i]);
+    }
+  }
+}
+function moveMealTo(toDay) {
+  if(!_tapMove) { closeM(); return; }
+  var c = gc(_tapMove.cid); if(!c) return;
+  if(!c.weeklyMeals[toDay]) c.weeklyMeals[toDay]=[];
+  var meal = c.weeklyMeals[_tapMove.day].splice(_tapMove.idx,1)[0];
+  c.weeklyMeals[toDay].push(meal);
+  _tapMove = null;
+  saveData(); closeM(); rWS();
+}
 // drag & drop
 function dragStart(e, day, idx, cid) { _dragDay=day; _dragIdx=idx; _dragCid=cid; e.dataTransfer.effectAllowed='move'; }
 function dragEnd() { var cols=document.querySelectorAll('.day-col'); for(var i=0;i<cols.length;i++) cols[i].classList.remove('drag-over'); }
@@ -1056,17 +1224,65 @@ function dropMeal(e, toDay, cid) {
 function wfAct(status, cid) {
   var c = gc(cid); if(!c) return;
   c.menuStatus = status;
-  if (status==='complete' && (!c.groceryList||!c.groceryList.length)) {
-    c.groceryList = [{cat:'Proteins',items:['Add proteins...']},{cat:'Produce',items:['Add produce...']},{cat:'Pantry',items:['Add pantry items...']}];
-  }
   if (status==='sent') {
     var cu = null; for(var i=0;i<TEAM.length;i++){if(TEAM[i].clientId===cid){cu=TEAM[i];break;}}
-    if (cu) emailTo(cu.email,'Your menu + grocery list is ready — '+c.name,'Hi '+c.contact+',\n\nYour menu and grocery list for this week are ready. Log in to review and request any changes within '+(c.revisionDays||3)+' days.\n\n'+CFG.appUrl+'\n\n'+CFG.fromName);
+    if (cu) emailTo(cu.email,'Your menu is ready for approval — '+c.name,'Hi '+c.contact+',\n\nYour chef has built this week\'s menu and it\'s ready for your review. Log in to approve or request changes.\n\n'+CFG.appUrl+'\n\n'+CFG.fromName);
+    addN('Menu sent to '+c.contact+' for approval',[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
   }
-  if (status==='pending') { addN('Menu ready for sign-off: '+c.name,['dietitian'],[],{page:'workspace',wsCid:cid,wsTab:'menu'}); emailTo(CFG.emailDietitian,'Menu awaiting approval — '+c.name,'Hi Brittany,\n\n'+cn(c.chefId)+' submitted the menu for '+c.name+' and it\'s ready for your review.\n\n'+CFG.appUrl+'\n\n'+CFG.fromName); }
-  if (status==='approved') addN('Menu approved for '+c.name+' — ready to send to client',[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
-  rWS();
+  if (status==='pending') {
+    addN('Menu ready for sign-off: '+c.name,['dietitian'],[],{page:'workspace',wsCid:cid,wsTab:'menu'});
+    emailTo(CFG.emailDietitian,'Menu awaiting approval — '+c.name,'Hi Brittany,\n\n'+cn(c.chefId)+' submitted the menu for '+c.name+' and it\'s ready for your review.\n\n'+CFG.appUrl+'\n\n'+CFG.fromName);
+  }
+  if (status==='approved') addN('Menu approved — ready to send to '+c.contact,[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
+  if (status==='client_approved') {
+    addN(c.contact+' approved the menu for '+c.name+' — ready to build grocery list',[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
+    addN(c.contact+' approved the menu for '+c.name,['dietitian','manager'],[],{page:'workspace',wsCid:cid,wsTab:'menu'});
+  }
+  if (status==='complete') {
+    var cu2=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].clientId===cid){cu2=TEAM[i];break;}}
+    if(cu2) emailTo(cu2.email,'Your grocery list is ready — '+c.name,'Hi '+c.contact+',\n\nYour grocery list for this week is ready. Log in to view it.\n\n'+CFG.appUrl+'\n\n'+CFG.fromName);
+    addN('Grocery list sent to '+c.contact,['dietitian','manager'],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
+  }
+  saveData(); rWS();
 }
+function buildGroceryList(cid) {
+  var c = gc(cid); if(!c) return;
+  // Auto-generate grocery list from recipe bank
+  var proteins=[],produce=[],pantry=[],dairy=[],other=[];
+  var wdays=WDAYS;
+  for(var i=0;i<wdays.length;i++){
+    var meals=(c.weeklyMeals||{})[wdays[i]]||[];
+    for(var j=0;j<meals.length;j++){
+      var m=meals[j];
+      // Find in recipe bank
+      var rec=null;for(var k=0;k<RECIPES.length;k++){if(RECIPES[k].name.toLowerCase()===m.name.toLowerCase()){rec=RECIPES[k];break;}}
+      if(rec&&rec.ingredients){
+        var lines=rec.ingredients.split('\n');
+        for(var l=0;l<lines.length;l++){
+          var line=lines[l].trim();if(!line)continue;
+          var low=line.toLowerCase();
+          if(low.match(/chicken|beef|turkey|salmon|pork|shrimp|tuna|lamb|egg/)) proteins.push(line);
+          else if(low.match(/tomato|lettuce|onion|pepper|carrot|broccoli|spinach|avocado|fruit|apple|berry|lemon|lime|garlic|herb|basil|cilantro|parsley/)) produce.push(line);
+          else if(low.match(/pasta|rice|bread|flour|oil|sauce|can|box|jar|spice|salt|pepper|sugar|vinegar|stock|broth/)) pantry.push(line);
+          else if(low.match(/milk|cheese|butter|cream|yogurt/)) dairy.push(line);
+          else other.push(line);
+        }
+      }
+    }
+  }
+  var gl=[];
+  if(proteins.length) gl.push({cat:'Proteins',items:dedupe(proteins)});
+  if(produce.length) gl.push({cat:'Produce',items:dedupe(produce)});
+  if(pantry.length) gl.push({cat:'Pantry',items:dedupe(pantry)});
+  if(dairy.length) gl.push({cat:'Dairy',items:dedupe(dairy)});
+  if(other.length) gl.push({cat:'Other',items:dedupe(other)});
+  if(!gl.length) gl=[{cat:'Proteins',items:['Add proteins...']},{cat:'Produce',items:['Add produce...']},{cat:'Pantry',items:['Add pantry items...']}];
+  c.groceryList=gl;
+  c.menuStatus='grocery_ready';
+  addN('Grocery list built for '+c.name+' — review before sending',[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
+  saveData(); rWS();
+}
+function dedupe(arr){var seen={};var out=[];for(var i=0;i<arr.length;i++){var k=arr[i].toLowerCase().trim();if(!seen[k]){seen[k]=true;out.push(arr[i]);}}return out;}
 function addMealM(day, cid) {
   var c = gc(cid); var plan = c ? (c.servicePlan||[]) : [];
   var planNote = plan.length ? '<div style="font-size:12px;color:var(--warm);margin-bottom:12px;padding:8px 10px;background:var(--sage-l);border-radius:7px"><strong>Service plan:</strong> '+plan.map(function(sp){return sp.qty+'x '+sp.mealType+' · '+sp.packaging+' · '+sp.servings+' serv';}).join(' | ')+'</div>' : '';
@@ -1101,7 +1317,7 @@ function saveMeal(day, cid) {
   if(!c.weeklyMeals) c.weeklyMeals={Mon:[],Tue:[],Wed:[],Thu:[],Fri:[],Sat:[],Sun:[]};
   if(!c.weeklyMeals[day]) c.weeklyMeals[day]=[];
   c.weeklyMeals[day].push({id:'m'+Date.now(),name:n,mealType:$('am-t').value,forWho:$('am-w').value,servings:$('am-s').value,packaging:$('am-p').value,notes:$('am-no').value});
-  closeM(); rWS();
+  saveData(); closeM(); rWS();
 }
 function rmMeal(day,idx,cid) { var c=gc(cid);if(!c)return;c.weeklyMeals[day].splice(idx,1);rWS(); }
 function addRotToMenu(name, cid) {
@@ -1144,22 +1360,27 @@ function saveClientMealEdit(day,mi,cid) {
   if(c.menuStatus==='sent')c.menuStatus='revised';
   var u=tu(S.uid);
   var note=newName!==oldName?'Changed "'+oldName+'" to "'+newName+'"'+(newNote?' — note: '+newNote:''):(newNote?'Updated note on "'+newName+'": "'+newNote+'"':'Updated "'+newName+'"');
+  // Auto-save preference notes
+  if(newNote) {
+    var prefNote = '"'+newName+'": '+newNote;
+    c.notes = c.notes ? c.notes + '\n' + prefNote : prefNote;
+  }
   if(!c.messages)c.messages=[];
   c.messages.push({from:S.uid,time:'Just now',text:'Menu change: '+note});
   addN((u?u.name:'Client')+' edited menu — '+note,[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'menu'});
-  closeM();rWS();
+  saveData(); closeM(); rWS();
 }
 function clientRemoveMeal(day,mi,cid) {
   var c=gc(cid);if(!c)return;
   var m=(c.weeklyMeals[day]||[])[mi];if(!m)return;
   if(!confirm('Remove "'+m.name+'" from '+day+'?'))return;
   c.weeklyMeals[day].splice(mi,1);
-  if(c.menuStatus==='sent')c.menuStatus='revised';
+  if(c.menuStatus==='sent'||c.menuStatus==='client_approved')c.menuStatus='revised';
   var u=tu(S.uid);
   if(!c.messages)c.messages=[];
   c.messages.push({from:S.uid,time:'Just now',text:'Removed "'+m.name+'" from '+day});
   addN((u?u.name:'Client')+' removed "'+m.name+'" from '+day,[],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'messages'});
-  rWS();
+  saveData(); rWS();
 }
 
 // ── FEEDBACK ──────────────────────────────────────────────────────────────────
@@ -1325,7 +1546,7 @@ function submitFb(cid,editIdx){
     S.fbDraft[cid]={or:0,on:'',meals:{}};
   }
   addN((u?u.name:'Client')+' submitted feedback for '+c.name+(rotA?' — '+rotA+' meal'+(rotA!==1?'s':'')+' added to rotation':''),['dietitian','manager'],[c.chefId],{page:'workspace',wsCid:cid,wsTab:'feedback'});
-  closeM();rWS();
+  saveData(); closeM();rWS();
 }
 
 // ── MESSAGES TAB ──────────────────────────────────────────────────────────────
@@ -1355,7 +1576,7 @@ function sendMsg(cid){
     var cu=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].clientId===cid){cu=TEAM[i];break;}}
     if(cu) addN('New message from '+(tu(S.uid)?tu(S.uid).name:'Team')+' — '+c.name,[],[cu.id],{page:'messages',wsCid:cid});
   }
-  rWS();
+  saveData(); rWS();
 }
 
 // ── CHECKLIST ─────────────────────────────────────────────────────────────────
@@ -1489,6 +1710,78 @@ function rAI(){
     '<div class="aiinput"><textarea id="aiinp" placeholder="Ask for menu ideas, allergy checks, substitutions..." onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();sendAI('+c.id+')}" rows="2"></textarea><button class="btn bs" onclick="sendAI('+c.id+')" style="align-self:flex-end;padding:9px 14px"><i class="ti ti-arrow-up" style="font-size:14px"></i></button></div>';
   setTimeout(function(){var el=$('aichat');if(el)el.scrollTop=el.scrollHeight;},50);
 }
+// Parse AI response for meal suggestions and add to weekly menu
+function parseAIMeals(text) {
+  // Look for numbered or bulleted meal suggestions
+  var meals = [];
+  var lines = text.split('\n');
+  var dayOrder = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var dayIdx = 0;
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    // Match: "1. Meal name", "- Meal name", "• Meal name", "**Meal name**"
+    var m = line.match(/^(?:\d+[\.\)]|[-•*]|\*\*)\s*(.+?)(?:\*\*)?(?:\s*[-—:].+)?$/);
+    if (m) {
+      var name = m[1].replace(/\*\*/g, '').trim();
+      // Filter out non-meal lines (short words, headers)
+      if (name.length > 4 && name.length < 80 && name.split(' ').length >= 2) {
+        meals.push({name: name, day: dayOrder[dayIdx % 7], mealType: 'Dinner', servings: '4-6', packaging: 'Family style', forWho: 'Whole family', notes: ''});
+        dayIdx++;
+      }
+    }
+  }
+  return meals;
+}
+
+function showAddToMenuModal(cid, meals) {
+  var c = gc(cid); if(!c) return;
+  if (!meals || !meals.length) { alert('No meals detected in this response. Try asking for a numbered list of meal ideas.'); return; }
+  var rows = '';
+  for (var i = 0; i < meals.length; i++) {
+    var m = meals[i];
+    var dayOpts = '';
+    for (var j = 0; j < WDAYS.length; j++) {
+      dayOpts += '<option value="' + WDAYS[j] + '"' + (WDAYS[j] === m.day ? ' selected' : '') + '>' + WDAYS[j] + '</option>';
+    }
+    rows += '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--bdr);flex-wrap:wrap">' +
+      '<input type="checkbox" id="aim-cb-' + i + '" checked style="width:16px;height:16px;accent-color:var(--sage-d);flex-shrink:0">' +
+      '<input id="aim-n-' + i + '" value="' + esc(m.name) + '" style="flex:1;min-width:140px;padding:5px 8px;border:0.5px solid var(--bdr);border-radius:6px;font-family:Jost,sans-serif;font-size:12px">' +
+      '<select id="aim-d-' + i + '" style="padding:5px 8px;border:0.5px solid var(--bdr);border-radius:6px;font-family:Jost,sans-serif;font-size:12px">' + dayOpts + '</select>' +
+    '</div>';
+  }
+  openM('<h3 class="serif">Add AI meals to menu</h3>' +
+    '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Review and adjust each meal. Uncheck any you do not want. Each will be added to the selected day.</p>' +
+    rows +
+    '<button class="btn bd bfull" style="margin-top:1rem" onclick="confirmAddAIMeals(' + cid + ',' + meals.length + ')"><i class="ti ti-plus"></i> Add checked meals to menu</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+
+function confirmAddAIMeals(cid, count) {
+  var c = gc(cid); if(!c) return;
+  var added = 0;
+  for (var i = 0; i < count; i++) {
+    var cb = document.getElementById('aim-cb-' + i);
+    if (!cb || !cb.checked) continue;
+    var nameEl = document.getElementById('aim-n-' + i);
+    var dayEl = document.getElementById('aim-d-' + i);
+    if (!nameEl || !dayEl) continue;
+    var name = nameEl.value.trim();
+    var day = dayEl.value;
+    if (!name) continue;
+    if (!c.weeklyMeals) c.weeklyMeals = {Mon:[],Tue:[],Wed:[],Thu:[],Fri:[],Sat:[],Sun:[]};
+    if (!c.weeklyMeals[day]) c.weeklyMeals[day] = [];
+    c.weeklyMeals[day].push({id:'m'+Date.now()+i, name:name, mealType:'Dinner', servings:'4-6', packaging:'Family style', forWho:'Whole family', notes:'Added from AI suggestion'});
+    added++;
+  }
+  saveData();
+  closeM();
+  // Navigate to menu tab
+  S.wsCid = cid;
+  S.wsTab = 'menu';
+  go('workspace');
+  alert(added + ' meal' + (added !== 1 ? 's' : '') + ' added to the menu!');
+}
+
 function clearAI(cid){S.aiH[cid]=[];var c=gc(cid);if(c)buildAIIntro(c);rAI();}
 function qpSend(cid,idx){var qps=$('p-ai')._qps;if(!qps||!qps[idx])return;var i=$('aiinp');if(i)i.value=qps[idx].p;sendAI(cid);}
 function sendAI(cid){
@@ -1507,7 +1800,26 @@ function sendAI(cid){
       var isFlag=reply.indexOf('⚠️ ALLERGY FLAG')>=0;
       S.aiH[c.id].push({role:'assistant',content:reply,flag:isFlag});
       var aith=$('aith');if(aith)aith.parentNode.removeChild(aith);
-      if(chat){var el=document.createElement('div');el.className='aim '+(isFlag?'flag':'ai');el.innerHTML=reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');chat.appendChild(el);chat.scrollTop=chat.scrollHeight;}
+      if(chat){
+        var el=document.createElement('div');
+        el.className='aim '+(isFlag?'flag':'ai');
+        el.innerHTML=reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+        // Add "Add to menu" button if response contains meal suggestions
+        var parsedMeals = parseAIMeals(reply);
+        if (parsedMeals.length >= 2) {
+          var btnWrap = document.createElement('div');
+          btnWrap.style.marginTop = '10px';
+          var addBtn = document.createElement('button');
+          addBtn.className = 'btn bs';
+          addBtn.style.fontSize = '12px';
+          addBtn.innerHTML = '<i class="ti ti-calendar-plus" style="font-size:12px"></i> Add these meals to menu';
+          (function(meals, clientId){ addBtn.onclick = function(){ showAddToMenuModal(clientId, meals); }; })(parsedMeals, c.id);
+          btnWrap.appendChild(addBtn);
+          el.appendChild(btnWrap);
+        }
+        chat.appendChild(el);
+        chat.scrollTop=chat.scrollHeight;
+      }
     })
     .catch(function(){
       var aith=$('aith');if(aith)aith.parentNode.removeChild(aith);
@@ -1548,7 +1860,7 @@ function rRec(){
       '<h2 class="serif" style="font-size:22px;font-weight:400">Recipe bank <span style="font-size:14px;color:var(--warm);font-family:\'Jost\',sans-serif;font-weight:400">— shared team library</span></h2>'+
       '<button class="btn bs" onclick="newRec()"><i class="ti ti-plus" style="font-size:13px"></i> Add recipe</button>'+
     '</div>'+
-    '<div style="font-size:12px;color:var(--warm);margin-bottom:1rem">All recipes added here are visible to Brandy, Riley, Esther, and Brittany. Search by meal type or dietary tag.</div>'+
+    '<div style="font-size:12px;color:var(--warm);margin-bottom:1rem">Visible to all team members. Search by meal type or dietary tag.</div>'+
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">'+mtBtns+'</div>'+
     '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:1rem">'+tagBtns+'</div>'+
     (list.length?recHtml:'<div class="empty">No recipes match this filter. Add the first one!</div>');
@@ -1595,6 +1907,192 @@ function toggleRecEdTag(t){
 function saveRecVer(){var r=RECIPES[S.recEdit];if(!r)return;var n=prompt('Note for this version:','Updated');if(!n)return;if(!r.versions)r.versions=[];r.versions.push({date:tod(),note:n});rRecEditor();}
 function delRec(){if(!confirm('Delete this recipe?'))return;RECIPES.splice(S.recEdit,1);S.recEdit=null;rRec();}
 
+// ── HOURS / TIME TRACKING ────────────────────────────────────────────────────
+function rHours() {
+  var isMgr = S.role === 'dietitian' || S.role === 'manager';
+  var myLog = [];
+  if (isMgr) {
+    myLog = TIME_LOG;
+  } else {
+    for (var i=0;i<TIME_LOG.length;i++) { if(TIME_LOG[i].userId===S.uid) myLog.push(TIME_LOG[i]); }
+  }
+
+  // Check if currently clocked in
+  var clockedIn = _clockInProgress && _clockInProgress.userId === S.uid;
+
+  // Weekly totals
+  var weekTotals = {};
+  for (var i=0;i<myLog.length;i++) {
+    var e=myLog[i];
+    var key=e.userId;
+    if(!weekTotals[key]) weekTotals[key]={name:e.userName,mins:0,sessions:0};
+    if(e.duration) { weekTotals[key].mins+=e.duration; weekTotals[key].sessions++; }
+  }
+
+  var cl = myC();
+  var copts = '<option value="">— Select client —</option>';
+  for(var i=0;i<cl.length;i++) copts+='<option value="'+cl[i].id+'">'+esc(cl[i].name)+'</option>';
+
+  var clockSection = '';
+  if (S.role === 'chef') {
+    if (!clockedIn) {
+      clockSection = '<div class="card" style="background:linear-gradient(135deg,var(--sage-l),#e8f0e4);border-color:var(--sage)">' +
+        '<div style="font-size:16px;font-weight:500;margin-bottom:12px">⏱ Clock in</div>' +
+        '<div class="fg"><label>Client</label><select id="ci-cid">'+copts+'</select></div>' +
+        '<div class="fg"><label>Notes (optional)</label><input id="ci-note" placeholder="e.g. Weekly meal prep"></div>' +
+        '<button class="btn bd bfull" style="background:var(--sage-d);border-color:var(--sage-d)" onclick="clockIn()"><i class="ti ti-player-play"></i> Clock in</button>' +
+      '</div>';
+    } else {
+      var c = gc(_clockInProgress.clientId);
+      var startTime = new Date(_clockInProgress.startTime);
+      var elapsed = Math.round((Date.now() - _clockInProgress.startTime) / 60000);
+      clockSection = '<div class="card" style="background:var(--amber-l);border:1.5px solid var(--amber)">' +
+        '<div style="font-size:16px;font-weight:500;margin-bottom:8px;color:var(--amber-d)">⏱ Currently clocked in</div>' +
+        '<div style="font-size:13px;margin-bottom:4px"><strong>'+(c?esc(c.name):'Client')+'</strong></div>' +
+        '<div style="font-size:13px;color:var(--warm);margin-bottom:12px">Started: '+startTime.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})+' · '+elapsed+' min elapsed</div>' +
+        '<div class="fi" style="margin-bottom:12px"><label>End notes (optional)</label><input id="co-note" placeholder="e.g. Completed all meals"></div>' +
+        '<button class="btn bd bfull" style="background:var(--red-d);border-color:var(--red-d)" onclick="clockOut()"><i class="ti ti-player-stop"></i> Clock out</button>' +
+      '</div>';
+    }
+  }
+
+  // Manager adjustment section
+  var adjSection = '';
+  if (isMgr) {
+    adjSection = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">' +
+      '<h3 class="serif" style="font-size:18px;font-weight:400">All team hours</h3>' +
+      '<button class="btn bs" onclick="manualEntryM()"><i class="ti ti-plus"></i> Manual entry</button>' +
+    '</div>';
+
+    // Weekly summary by chef
+    var summaryHtml = '<div class="g3" style="margin-bottom:1rem">';
+    var chefs = [];
+    for (var k in weekTotals) { chefs.push(weekTotals[k]); }
+    if (chefs.length) {
+      for (var i=0;i<chefs.length;i++) {
+        var hrs = Math.floor(chefs[i].mins/60); var mins = chefs[i].mins%60;
+        summaryHtml += '<div style="background:var(--sage-l);border-radius:10px;padding:1rem;text-align:center">' +
+          '<div style="font-weight:500;font-size:13px;margin-bottom:4px">'+esc(chefs[i].name.split(' ')[0])+'</div>' +
+          '<div class="serif" style="font-size:24px;color:var(--sage-d)">'+hrs+'h '+mins+'m</div>' +
+          '<div style="font-size:11px;color:var(--sage-d)">'+chefs[i].sessions+' session'+(chefs[i].sessions!==1?'s':'')+'</div>' +
+        '</div>';
+      }
+    } else { summaryHtml += '<div style="font-size:13px;color:var(--warm);padding:1rem">No hours logged yet.</div>'; }
+    summaryHtml += '</div>';
+    adjSection = summaryHtml + adjSection;
+  }
+
+  // Log entries
+  var logHtml = '';
+  if (myLog.length) {
+    logHtml = '<div class="card"><div class="cl">'+(isMgr?'All entries':'My entries')+'</div>';
+    for(var i=0;i<myLog.length;i++){
+      var e=myLog[i];
+      var hrs=e.duration?Math.floor(e.duration/60):0;var mins=e.duration?e.duration%60:0;
+      logHtml+='<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid var(--bdr);flex-wrap:wrap;gap:6px">' +
+        '<div><div style="font-weight:500;font-size:13px">'+esc(e.clientName||'')+(isMgr?' · '+esc(e.userName||''):'')+'</div>' +
+        '<div style="font-size:12px;color:var(--warm)">'+esc(e.date||'')+' · In: '+esc(e.clockIn||'')+' · Out: '+(e.clockOut||'—')+(e.notes?' · "'+esc(e.notes)+'"':'')+'</div></div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          (e.duration?'<span style="font-weight:500;font-size:13px;color:var(--sage-d)">'+hrs+'h '+mins+'m</span>':'<span class="tag ta">In progress</span>') +
+          (isMgr?'<button class="btn" style="padding:3px 7px;font-size:10px" onclick="editEntryM('+i+')"><i class="ti ti-edit" style="font-size:10px"></i></button>':'') +
+        '</div>' +
+      '</div>';
+    }
+    logHtml+='</div>';
+  } else { logHtml='<div class="empty">No hours logged yet.</div>'; }
+
+  var myTotalMins = 0;
+  for(var i=0;i<myLog.length;i++){if(myLog[i].duration)myTotalMins+=myLog[i].duration;}
+  var myHrs=Math.floor(myTotalMins/60);var myMins=myTotalMins%60;
+
+  $('p-hours').innerHTML =
+    '<h2 class="serif" style="font-size:22px;font-weight:400;margin-bottom:1rem">Hours</h2>' +
+    clockSection +
+    (!isMgr && myTotalMins ? '<div class="card" style="text-align:center;background:var(--sage-l);border-color:var(--sage)"><div class="serif" style="font-size:36px;color:var(--sage-d)">'+myHrs+'h '+myMins+'m</div><div style="font-size:12px;color:var(--sage-d)">Total logged</div></div>' : '') +
+    adjSection + logHtml;
+}
+
+function clockIn() {
+  var cid = $('ci-cid') ? parseInt($('ci-cid').value) : 0;
+  if (!cid) { alert('Please select a client.'); return; }
+  var c = gc(cid); var note = $('ci-note') ? $('ci-note').value : '';
+  _clockInProgress = {userId: S.uid, clientId: cid, startTime: Date.now(), note: note};
+  saveData(); rHours();
+}
+function clockOut() {
+  if (!_clockInProgress) return;
+  var u = tu(S.uid); var c = gc(_clockInProgress.clientId);
+  var endTime = Date.now();
+  var duration = Math.round((endTime - _clockInProgress.startTime) / 60000);
+  var startDate = new Date(_clockInProgress.startTime);
+  var endNote = $('co-note') ? $('co-note').value : '';
+  var note = [_clockInProgress.note, endNote].filter(Boolean).join(' · ');
+  TIME_LOG.unshift({
+    id: 'tl'+Date.now(),
+    userId: S.uid,
+    userName: u ? u.name : '',
+    clientId: _clockInProgress.clientId,
+    clientName: c ? c.name : '',
+    clockIn: startDate.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
+    clockOut: new Date(endTime).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}),
+    duration: duration,
+    notes: note,
+    date: startDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+  });
+  _clockInProgress = null;
+  addN((u?u.name:'Chef')+' clocked out — '+(c?c.name:'')+' ('+Math.floor(duration/60)+'h '+(duration%60)+'m)',['dietitian','manager'],[],{page:'hours'});
+  saveData(); rHours();
+}
+function manualEntryM() {
+  var chefs=[]; for(var i=0;i<TEAM.length;i++){if(TEAM[i].role==='chef'||TEAM[i].role==='dietitian')chefs.push(TEAM[i]);}
+  var copts='<option value="">— Client —</option>'; for(var i=0;i<CLIENTS.length;i++) copts+='<option value="'+CLIENTS[i].id+'">'+esc(CLIENTS[i].name)+'</option>';
+  var uopts=''; for(var i=0;i<chefs.length;i++) uopts+='<option value="'+chefs[i].id+'">'+esc(chefs[i].name)+'</option>';
+  openM('<h3 class="serif">Manual time entry</h3>' +
+    '<div class="fg"><label>Chef</label><select id="me-uid">'+uopts+'</select></div>' +
+    '<div class="fg"><label>Client</label><select id="me-cid">'+copts+'</select></div>' +
+    '<div class="fg"><label>Date</label><input id="me-date" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div>' +
+    '<div class="g2"><div class="fg"><label>Clock in</label><input id="me-in" type="time"></div>' +
+    '<div class="fg"><label>Clock out</label><input id="me-out" type="time"></div></div>' +
+    '<div class="fg"><label>Notes</label><input id="me-note" placeholder="e.g. Weekly meal prep"></div>' +
+    '<button class="btn bd bfull" onclick="saveManualEntry()">Save entry</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function saveManualEntry() {
+  var uid=$('me-uid').value;var cid=parseInt($('me-cid').value);var date=$('me-date').value;
+  var inT=$('me-in').value;var outT=$('me-out').value;var note=$('me-note').value;
+  if(!uid||!cid||!date||!inT||!outT){alert('Please fill in all required fields.');return;}
+  var u=tu(uid);var c=gc(cid);
+  // Calculate duration
+  var inParts=inT.split(':');var outParts=outT.split(':');
+  var inMins=parseInt(inParts[0])*60+parseInt(inParts[1]);
+  var outMins=parseInt(outParts[0])*60+parseInt(outParts[1]);
+  var duration=outMins-inMins;
+  if(duration<=0){alert('Clock out must be after clock in.');return;}
+  var dateObj=new Date(date);
+  TIME_LOG.unshift({id:'tl'+Date.now(),userId:uid,userName:u?u.name:'',clientId:cid,clientName:c?c.name:'',clockIn:inT,clockOut:outT,duration:duration,notes:note,date:dateObj.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});
+  saveData();closeM();rHours();
+}
+function editEntryM(idx) {
+  var e=TIME_LOG[idx];if(!e)return;
+  openM('<h3 class="serif">Edit entry</h3>' +
+    '<div class="fg"><label>Notes</label><input id="ee-note" value="'+esc(e.notes||'')+'"></div>' +
+    '<div class="g2"><div class="fg"><label>Clock in</label><input id="ee-in" value="'+esc(e.clockIn||'')+'"></div>' +
+    '<div class="fg"><label>Clock out</label><input id="ee-out" value="'+esc(e.clockOut||'')+'"></div></div>' +
+    '<button class="btn bd bfull" onclick="saveEntryEdit('+idx+')">Save</button>' +
+    '<button class="btn br bfull" style="margin-top:6px" onclick="deleteEntry('+idx+')">Delete entry</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+function saveEntryEdit(idx) {
+  var e=TIME_LOG[idx];if(!e)return;
+  e.notes=$('ee-note').value;e.clockIn=$('ee-in').value;e.clockOut=$('ee-out').value;
+  saveData();closeM();rHours();
+}
+function deleteEntry(idx) {
+  if(!confirm('Delete this time entry?'))return;
+  TIME_LOG.splice(idx,1);
+  saveData();closeM();rHours();
+}
+
 // ── MESSAGES PAGE ─────────────────────────────────────────────────────────────
 function rMsgs(){
   var cl=myC();var c=null;
@@ -1626,7 +2124,7 @@ function rTeam(){
   $('p-team').innerHTML=html;
 }
 function addTeamM(){openM('<h3 class="serif">Add team member</h3><div class="fg"><label>Full name</label><input id="tm-n" placeholder="Full name"></div><div class="fg"><label>Email</label><input id="tm-e" type="email"></div><div class="fg"><label>Password</label><input id="tm-p" type="password" placeholder="Temporary password"></div><div class="fg"><label>Role</label><select id="tm-r"><option value="dietitian">Dietitian</option><option value="chef">Chef</option><option value="manager">Client Experience Manager</option><option value="client">Client</option></select></div><button class="btn bd bfull" onclick="saveTM()">Add</button><button class="mlink" onclick="closeM()">Cancel</button>');}
-function saveTM(){var n=$('tm-n').value.trim();var e=$('tm-e').value.trim().toLowerCase();var p=$('tm-p').value;var r=$('tm-r').value;if(!n||!e){alert('Name and email required.');return;}for(var i=0;i<TEAM.length;i++){if(TEAM[i].email===e){alert('Email already exists.');return;}}TEAM.push({id:'u'+Date.now(),name:n,role:r,email:e,password:p||'changeme',color:CCOLORS[TEAM.length%CCOLORS.length]});closeM();rTeam();}
+function saveTM(){var n=$('tm-n').value.trim();var e=$('tm-e').value.trim().toLowerCase();var p=$('tm-p').value;var r=$('tm-r').value;if(!n||!e){alert('Name and email required.');return;}for(var i=0;i<TEAM.length;i++){if(TEAM[i].email===e){alert('Email already exists.');return;}}TEAM.push({id:'u'+Date.now(),name:n,role:r,email:e,password:p||'changeme',color:CCOLORS[TEAM.length%CCOLORS.length]});saveData();closeM();rTeam();}
 function editTeamM(id){var u=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].id===id){u=TEAM[i];break;}}if(!u)return;openM('<h3 class="serif">Edit '+esc(u.name)+'</h3><div class="fg"><label>Full name</label><input id="em-n" value="'+esc(u.name)+'"></div><div class="fg"><label>Email</label><input id="em-e" value="'+esc(u.email||'')+'"></div><div class="fg"><label>New password (blank to keep)</label><input id="em-p" type="password" placeholder="Leave blank to keep"></div><div class="fg"><label>Role</label><select id="em-r"><option value="dietitian"'+(u.role==='dietitian'?' selected':'')+'>Dietitian</option><option value="chef"'+(u.role==='chef'?' selected':'')+'>Chef</option><option value="manager"'+(u.role==='manager'?' selected':'')+'>Client Experience Manager</option><option value="client"'+(u.role==='client'?' selected':'')+'>Client</option></select></div><button class="btn bd bfull" onclick="saveETM(\''+id+'\')">Save</button><button class="mlink" onclick="closeM()">Cancel</button>');}
 function saveETM(id){var u=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].id===id){u=TEAM[i];break;}}if(!u)return;u.name=$('em-n').value;u.email=$('em-e').value.toLowerCase();u.role=$('em-r').value;var p=$('em-p').value;if(p)u.password=p;closeM();rTeam();}
 function rmTeam(id){var u=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].id===id){u=TEAM[i];break;}}if(!u)return;var asgn=[];for(var i=0;i<CLIENTS.length;i++){if(CLIENTS[i].chefId===id)asgn.push(CLIENTS[i].name);}if(!confirm(asgn.length?'Remove '+u.name+'? Assigned to: '+asgn.join(', '):('Remove '+u.name+'?')))return;var nt=[];for(var i=0;i<TEAM.length;i++){if(TEAM[i].id!==id)nt.push(TEAM[i]);}TEAM=nt;rTeam();}
