@@ -133,9 +133,9 @@ body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--warm-d);f
 .rec-tag.on{background:var(--sage-l);border-color:var(--sage);color:var(--sage-d)}
 
 /* ── MODAL ── */
-.mov{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:flex-end;justify-content:center;z-index:999;padding:0}
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:999;padding:1rem}
 .mov.open{display:flex}
-.mbox{background:#fff;border-radius:18px 18px 0 0;padding:1.5rem;width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
+.mbox{background:#fff;border-radius:14px;padding:1.5rem;width:100%;max-width:480px;max-height:82vh;overflow-y:auto}
 .mbox h3{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:400;margin-bottom:1rem}
 .mlink{display:block;text-align:center;font-size:13px;color:var(--warm);margin-top:1rem;cursor:pointer;background:none;border:none;font-family:'Jost',sans-serif;width:100%}
 
@@ -230,7 +230,7 @@ var RECIPES = [];
 // ── PERSISTENCE ──────────────────────────────────────────────────────────────
 function saveData() {
   try {
-    localStorage.setItem('thetable_v2', JSON.stringify({CLIENTS:CLIENTS, TEAM:TEAM, RECIPES:RECIPES}));
+    localStorage.setItem('thetable_v2', JSON.stringify({CLIENTS:CLIENTS, TEAM:TEAM, RECIPES:RECIPES, AI_HISTORY:S.aiH}));
   } catch(e) {}
 }
 function loadData() {
@@ -241,6 +241,7 @@ function loadData() {
     if (d.CLIENTS && d.CLIENTS.length) CLIENTS = d.CLIENTS;
     if (d.TEAM && d.TEAM.length) TEAM = d.TEAM;
     if (d.RECIPES) RECIPES = d.RECIPES;
+    if (d.AI_HISTORY) S.aiH = d.AI_HISTORY;
   } catch(e) {}
 }
 loadData();
@@ -719,6 +720,15 @@ function removeFamilyMember(cid,idx){
 
 function addClientM(){
   openM('<h3 class="serif">Add new client</h3>' +
+    '<div style="display:flex;gap:8px;margin-bottom:1.25rem">' +
+      '<button class="btn bs bfull" onclick="showAIProfileBuilder()" style="flex:1;flex-direction:column;height:auto;padding:12px;text-align:center"><i class="ti ti-robot" style="font-size:18px;margin-bottom:4px;display:block"></i><span style="font-size:12px;font-weight:500">Build with AI</span><span style="font-size:11px;color:var(--sage-d);font-weight:400">Just describe the family</span></button>' +
+      '<button class="btn bfull" onclick="showManualClientForm()" style="flex:1;flex-direction:column;height:auto;padding:12px;text-align:center"><i class="ti ti-forms" style="font-size:18px;margin-bottom:4px;display:block"></i><span style="font-size:12px;font-weight:500">Fill in manually</span><span style="font-size:11px;color:var(--warm);font-weight:400">Enter details yourself</span></button>' +
+    '</div>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+
+function showManualClientForm(){
+  openM('<h3 class="serif">Add new client</h3>' +
     '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Use first name and last initial only — e.g. "Sarah M."</p>' +
     '<div class="fg"><label>Display name</label><input id="nc-name" placeholder="Sarah M."></div>' +
     '<div class="fg"><label>Service day</label><select id="nc-day"><option value="">— Select —</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></div>' +
@@ -727,6 +737,73 @@ function addClientM(){
     '</select></div>' +
     '<button class="btn bd bfull" onclick="saveNewClient()">Add client</button>' +
     '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+
+function showAIProfileBuilder(){
+  var chefOpts='<option value="">— Unassigned —</option>'+TEAM.filter(function(u){return u.role==='chef';}).map(function(u){return '<option value="'+u.id+'">'+esc(u.name)+'</option>';}).join('');
+  openM('<h3 class="serif">Build profile with AI</h3>' +
+    '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Tell the AI everything you know about this family in plain language. It will create the full client profile automatically.</p>' +
+    '<div class="fg"><label>Describe the family</label>' +
+      '<textarea id="ai-profile-input" style="min-height:140px" placeholder="e.g. Jessica M., mom of 3 kids ages 5, 8, and 11. Husband travels for work so she needs easy weeknight meals. No allergies but the youngest is very picky — won't eat mixed textures or sauces on food. They love Mexican food and simple proteins. Jessica wants healthy but realistic. Service on Thursdays."></textarea>' +
+    '</div>' +
+    '<div class="fg"><label>Assign chef</label><select id="ai-nc-chef">'+chefOpts+'</select></div>' +
+    '<button class="btn bs bfull" id="ai-build-btn" onclick="buildProfileWithAI()"><i class="ti ti-robot" style="font-size:13px"></i> Build profile</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+}
+
+function buildProfileWithAI(){
+  var desc=document.getElementById('ai-profile-input').value.trim();
+  if(!desc){alert('Please describe the family first.');return;}
+  var btn=document.getElementById('ai-build-btn');
+  if(btn){btn.textContent='Building profile...';btn.disabled=true;}
+  var system='You are a profile builder for a private chef service. Extract structured client information from a natural language description and return ONLY valid JSON with no extra text, no markdown, no code blocks. Return exactly this structure:
+{"name":"First Last Initial (e.g. Jessica M.)","serviceDay":"Monday","allergies":[],"dietaryRestrictions":[],"loves":"what they enjoy","aversions":"what to avoid","notes":"important context","familyMembers":[{"name":"name","role":"adult or child","age":"age if child","allergies":[],"notes":"individual notes"}]}
+If information is not mentioned, use empty string or empty array. serviceDay should be a day of the week or empty string.';
+  var messages=[{role:'user',content:'Build a client profile from this description: '+desc}];
+  fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:system,messages:messages})})
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var parsed=typeof data==='string'?JSON.parse(data):data;
+      var reply=(parsed.content&&parsed.content[0])?parsed.content[0].text:'';
+      try {
+        var clean=reply.replace(/```json/g,'').replace(/```/g,'').trim();
+        var profile=JSON.parse(clean);
+        var chefId=document.getElementById('ai-nc-chef')?document.getElementById('ai-nc-chef').value:'';
+        var newClient={
+          id:Date.now(),
+          name:profile.name||'New Client',
+          serviceDay:profile.serviceDay||'',
+          chefId:chefId,
+          allergies:profile.allergies||[],
+          dietaryRestrictions:profile.dietaryRestrictions||[],
+          loves:profile.loves||'',
+          aversions:profile.aversions||'',
+          notes:profile.notes||'',
+          familyMembers:profile.familyMembers||[],
+          weeklyMeals:{},
+          rotationBank:[],
+          feedbackHistory:[],
+          checklist:{}
+        };
+        CLIENTS.push(newClient);
+        // Seed AI history with the description so it remembers from day one
+        if(!S.aiH[newClient.id])S.aiH[newClient.id]=[];
+        S.aiH[newClient.id].push({role:'user',content:'Here is everything I know about this client so far: '+desc,intro:false});
+        S.aiH[newClient.id].push({role:'assistant',content:"Got it — I've built "+newClient.name+"'s profile from what you shared. I'll remember all of this as we plan together. You can keep telling me more at any time and I'll factor it in. What would you like to start with?",intro:true});
+        saveData();
+        closeM();
+        S.wsCid=newClient.id;
+        S.clientTab='profile';
+        rClientDetail();
+      } catch(e) {
+        alert('Could not parse the profile. Please try again or add the client manually.');
+        if(btn){btn.textContent='Build profile';btn.disabled=false;}
+      }
+    })
+    .catch(function(){
+      alert('Connection error. Please try again.');
+      if(btn){btn.textContent='Build profile';btn.disabled=false;}
+    });
 }
 
 function saveNewClient(){
@@ -1065,7 +1142,7 @@ function rAI(){
   if(cl.length>1){
     picker='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem">';
     for(var i=0;i<cl.length;i++){
-      picker+='<button class="btn'+(cl[i].id===c.id?' bs':'')+'" onclick="S.wsCid='+cl[i].id+';S.aiH['+cl[i].id+']=[];rAI()">'+esc(cl[i].name)+'</button>';
+      picker+='<button class="btn'+(cl[i].id===c.id?' bs':'')+'" onclick="S.wsCid='+cl[i].id+';rAI()">'+esc(cl[i].name)+'</button>';
     }
     picker+='</div>';
   }
@@ -1121,6 +1198,7 @@ function sendAI(cid){
   var c=gc(cid);if(!c)return;
   if(!S.aiH[c.id])S.aiH[c.id]=[];
   S.aiH[c.id].push({role:'user',content:t});
+  saveData();
   var chat=$('aichat');
   if(chat){
     chat.innerHTML+='<div class="aim user">'+t.replace(/\n/g,'<br>')+'</div>';
@@ -1137,6 +1215,7 @@ function sendAI(cid){
       var reply=(parsed.content&&parsed.content[0])?parsed.content[0].text:'Sorry, could not generate a response.';
       var isFlag=reply.indexOf('⚠️ ALLERGY FLAG')>=0;
       S.aiH[c.id].push({role:'assistant',content:reply,flag:isFlag});
+      saveData();
       var aith=$('aith');if(aith)aith.parentNode.removeChild(aith);
       if(chat){
         var el=document.createElement('div');
