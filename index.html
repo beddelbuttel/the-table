@@ -744,7 +744,7 @@ function showAIProfileBuilder(){
   openM('<h3 class="serif">Build profile with AI</h3>' +
     '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Tell the AI everything you know about this family in plain language. It will create the full client profile automatically.</p>' +
     '<div class="fg"><label>Describe the family</label>' +
-      '<textarea id="ai-profile-input" style="min-height:140px" placeholder="e.g. Jessica M., mom of 3 kids ages 5, 8, and 11. Husband travels for work so she needs easy weeknight meals. No allergies but the youngest is very picky — won't eat mixed textures or sauces on food. They love Mexican food and simple proteins. Jessica wants healthy but realistic. Service on Thursdays."></textarea>' +
+      '<textarea id="ai-profile-input" style="min-height:140px" placeholder="e.g. Jessica M., mom of 3 kids ages 5, 8 and 11. Husband travels so she needs easy weeknight meals. No allergies but youngest is picky - no mixed textures or sauces. They love Mexican food. Service on Thursdays."></textarea>' +
     '</div>' +
     '<div class="fg"><label>Assign chef</label><select id="ai-nc-chef">'+chefOpts+'</select></div>' +
     '<button class="btn bs bfull" id="ai-build-btn" onclick="buildProfileWithAI()"><i class="ti ti-robot" style="font-size:13px"></i> Build profile</button>' +
@@ -756,9 +756,7 @@ function buildProfileWithAI(){
   if(!desc){alert('Please describe the family first.');return;}
   var btn=document.getElementById('ai-build-btn');
   if(btn){btn.textContent='Building profile...';btn.disabled=true;}
-  var system='You are a profile builder for a private chef service. Extract structured client information from a natural language description and return ONLY valid JSON with no extra text, no markdown, no code blocks. Return exactly this structure:
-{"name":"First Last Initial (e.g. Jessica M.)","serviceDay":"Monday","allergies":[],"dietaryRestrictions":[],"loves":"what they enjoy","aversions":"what to avoid","notes":"important context","familyMembers":[{"name":"name","role":"adult or child","age":"age if child","allergies":[],"notes":"individual notes"}]}
-If information is not mentioned, use empty string or empty array. serviceDay should be a day of the week or empty string.';
+  var system='You are a profile builder for a private chef service. Extract structured client information from a natural language description and return ONLY valid JSON. No markdown, no code blocks, no extra text. Return this exact structure: {"name":"First Last Initial","serviceDay":"Monday or empty","allergies":[],"dietaryRestrictions":[],"loves":"foods they enjoy","aversions":"foods to avoid","notes":"key context","familyMembers":[{"name":"name","role":"adult or child","age":"age if child","allergies":[],"notes":"notes"}]} Use empty string or empty array if not mentioned.';
   var messages=[{role:'user',content:'Build a client profile from this description: '+desc}];
   fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:system,messages:messages})})
     .then(function(r){return r.json();})
