@@ -227,22 +227,76 @@ var TEAM = [
 var CLIENTS = [];
 var RECIPES = [];
 
-// -- PERSISTENCE --------------------------------------------------------------
-function saveData() {
-  try {
-    localStorage.setItem('thetable_v2', JSON.stringify({CLIENTS:CLIENTS, TEAM:TEAM, RECIPES:RECIPES, AI_HISTORY:S.aiH}));
-  } catch(e) {}
+// -- SUPABASE CONFIG ----------------------------------------------------------
+var SUPA_URL = 'https://ohjzxjlrfnnwzplhtzzc.supabase.co';
+var SUPA_KEY = 'sb_publishable_SPpu-Ts7xmsKzJx-vkg0vg_ATZNjKCn';
+
+function supaGet(id, cb) {
+  fetch(SUPA_URL+'/rest/v1/thetable_data?id=eq.'+id+'&select=data', {
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+  }).then(function(r){return r.json();})
+  .then(function(rows){cb(rows&&rows.length?rows[0].data:null);})
+  .catch(function(){cb(null);});
 }
+
+function supaSet(id, data) {
+  fetch(SUPA_URL+'/rest/v1/thetable_data?id=eq.'+id, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({data:data,updated_at:new Date().toISOString()})
+  }).catch(function(){});
+}
+
+// -- PERSISTENCE --------------------------------------------------------------
+var _saveTimer = null;
+function saveData() {
+  try { localStorage.setItem('thetable_v2', JSON.stringify({CLIENTS:CLIENTS,TEAM:TEAM,RECIPES:RECIPES,AI_HISTORY:S.aiH})); } catch(e) {}
+  if (_saveTimer) clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(function() {
+    supaSet('clients', CLIENTS);
+    supaSet('team', TEAM);
+    supaSet('recipes', RECIPES);
+    supaSet('ai_history', S.aiH);
+  }, 800);
+}
+
+var _dataLoaded = false;
 function loadData() {
   try {
     var raw = localStorage.getItem('thetable_v2');
-    if (!raw) return;
-    var d = JSON.parse(raw);
-    if (d.CLIENTS && d.CLIENTS.length) CLIENTS = d.CLIENTS;
-    if (d.TEAM && d.TEAM.length) TEAM = d.TEAM;
-    if (d.RECIPES) RECIPES = d.RECIPES;
-    if (d.AI_HISTORY) S.aiH = d.AI_HISTORY;
+    if (raw) {
+      var d = JSON.parse(raw);
+      if (d.CLIENTS && d.CLIENTS.length) CLIENTS = d.CLIENTS;
+      if (d.TEAM && d.TEAM.length) TEAM = d.TEAM;
+      if (d.RECIPES) RECIPES = d.RECIPES;
+      if (d.AI_HISTORY) S.aiH = d.AI_HISTORY;
+    }
   } catch(e) {}
+  var loaded = 0;
+  function check() {
+    loaded++;
+    if (loaded >= 4 && !_dataLoaded) {
+      _dataLoaded = true;
+      var fns = {clients:rClients,ai:rAI,recipes:rRec,feedback:rFeedback,team:rTeam};
+      if (S.page && fns[S.page]) fns[S.page]();
+    }
+  }
+  supaGet('clients', function(d) {
+    if (d && Array.isArray(d) && d.length) CLIENTS = d;
+    check();
+  });
+  supaGet('team', function(d) {
+    if (d && Array.isArray(d) && d.length) TEAM = d;
+    check();
+  });
+  supaGet('recipes', function(d) {
+    if (d && Array.isArray(d)) RECIPES = d;
+    check();
+  });
+  supaGet('ai_history', function(d) {
+    if (d && typeof d === 'object' && !Array.isArray(d)) S.aiH = d;
+    check();
+  });
 }
 loadData();
 
