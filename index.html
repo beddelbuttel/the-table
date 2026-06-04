@@ -1076,7 +1076,7 @@ function rAI(){
     '<strong>'+esc(c.name)+'</strong>' +
     (c.allergies&&c.allergies.length?' · <span style="color:var(--red-d)">⚠️ '+c.allergies.join(', ')+'</span>':'') +
     (lf?' · Last rating: ★'+lf.overallRating+'/5':'') +
-    (fbCount>' · <span style="color:var(--sage-d)">'+fbCount+' weeks of feedback</span>':'') +
+    (fbCount>0?' · <span style="color:var(--sage-d)">'+fbCount+' weeks of feedback</span>':'') +
     (lf&&lf.nextWeek?' · <span style="color:var(--blue-d)">Wants: '+esc(lf.nextWeek)+'</span>':'') +
   '</div>';
   // Messages
