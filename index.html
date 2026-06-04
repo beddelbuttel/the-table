@@ -812,7 +812,7 @@ function buildProfileWithAI(){
   if(btn){btn.textContent='Building profile...';btn.disabled=true;}
   var system='You are a profile builder for a private chef service. Extract structured client information from a natural language description and return ONLY valid JSON. No markdown, no code blocks, no extra text. Return this exact structure: {"name":"First Last Initial","serviceDay":"Monday or empty","allergies":[],"dietaryRestrictions":[],"loves":"foods they enjoy","aversions":"foods to avoid","notes":"key context","familyMembers":[{"name":"name","role":"adult or child","age":"age if child","allergies":[],"notes":"notes"}]} Use empty string or empty array if not mentioned.';
   var messages=[{role:'user',content:'Build a client profile from this description: '+desc}];
-  fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:system,messages:messages})})
+  fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:system,messages:messages})})
     .then(function(r){return r.json();})
     .then(function(data){
       var parsed=typeof data==='string'?JSON.parse(data):data;
@@ -1260,7 +1260,7 @@ function sendAI(cid){
   }
   var msgs=[];var hist=S.aiH[c.id];
   for(var i=0;i<hist.length;i++){if(hist[i].role==='user'||hist[i].role==='assistant')msgs.push({role:hist[i].role,content:hist[i].content||''});}
-  fetch('/.netlify/functions/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:buildSP(c),messages:msgs})})
+  fetch('/api/ai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:buildSP(c),messages:msgs})})
     .then(function(r){return r.json();})
     .then(function(data){
       var parsed=typeof data==='string'?JSON.parse(data):data;
