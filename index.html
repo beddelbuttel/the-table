@@ -309,7 +309,11 @@ function gc(id) { for(var i=0;i<CLIENTS.length;i++){if(CLIENTS[i].id===id)return
 function myC() {
   if(S.role==='dietitian'||S.role==='manager') return CLIENTS;
   var out=[];
-  for(var i=0;i<CLIENTS.length;i++){if(CLIENTS[i].chefId===S.uid)out.push(CLIENTS[i]);}
+  for(var i=0;i<CLIENTS.length;i++){
+    var c=CLIENTS[i];
+    if(c.chefId===S.uid){out.push(c);continue;}
+    if(c.coverageChefs&&c.coverageChefs.indexOf(S.uid)>=0){out.push(c);}
+  }
   return out;
 }
 function stars(n) {
@@ -505,33 +509,174 @@ function rProfile(c) {
 // -- MEALS TAB ----------------------------------------------------------------
 function rMeals(c) {
   if(!c.weeklyMeals) c.weeklyMeals = {};
-  var html = '<div class="card"><div class="card-title">This week\'s meal plan</div>' +
-    '<div class="week-grid">';
+  var isChefOrDiet = S.role==='chef'||S.role==='dietitian';
+
+  // Header with reset button
+  var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">' +
+    '<div style="font-size:13px;font-weight:500">This week</div>' +
+    '<div style="display:flex;gap:6px">' +
+      '<button class="btn ba" style="font-size:11px;padding:4px 10px" onclick="archiveWeek('+c.id+')"><i class="ti ti-archive" style="font-size:11px"></i> New week</button>' +
+    '</div>' +
+  '</div>';
+
+  // Meal structure note
+  if(c.weeklyMealStructure) {
+    html += '<div style="font-size:12px;color:var(--warm);margin-bottom:10px;font-style:italic">Typical week: '+esc(c.weeklyMealStructure)+'</div>';
+  }
+
+  // Week grid - group by meal type
+  var allMeals = [];
+  for(var d=0;d<WDAYS.length;d++){
+    var day=WDAYS[d];
+    var ms=c.weeklyMeals[day]||[];
+    for(var mi=0;mi<ms.length;mi++){
+      allMeals.push({day:day,idx:mi,meal:ms[mi]});
+    }
+  }
+
+  // Group by meal type
+  var byType = {};
+  var typeOrder = ['Breakfast','Lunch','Dinner','Snack','Kids Lunch'];
+  for(var i=0;i<allMeals.length;i++){
+    var t = allMeals[i].meal.mealType||'Dinner';
+    if(!byType[t]) byType[t]=[];
+    byType[t].push(allMeals[i]);
+  }
+
+  // Show by day grid
+  html += '<div class="card" style="margin-bottom:10px"><div class="week-grid">';
   for(var i=0;i<WDAYS.length;i++){
     var day=WDAYS[i];
     var meals=(c.weeklyMeals[day]||[]);
     html += '<div class="day-col"><div class="day-label">'+day+'</div>';
     for(var j=0;j<meals.length;j++){
       var m=meals[j];
+      var typeColor = m.mealType==='Breakfast'?'tb':m.mealType==='Lunch'||m.mealType==="Kids Lunch"?'ta':'tg';
       html += '<div class="meal-chip" onclick="editMealM('+c.id+',\''+day+'\','+j+')">' +
         '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px">'+esc(m.name)+'</span>' +
         '<button class="meal-chip-del" onclick="event.stopPropagation();delMeal('+c.id+',\''+day+'\','+j+')">x</button>' +
       '</div>';
     }
-    html += '<button class="add-meal-btn" onclick="addMealM('+c.id+',\''+day+'\')"><i class="ti ti-plus" style="font-size:10px"></i> Add</button>';
+    html += '<button class="add-meal-btn" onclick="addMealM('+c.id+',\''+day+'\')" ><i class="ti ti-plus" style="font-size:10px"></i> Add</button>';
     html += '</div>';
   }
   html += '</div></div>';
-  // Add to rotation
-  html += '<div class="card"><div class="card-title">Rotation bank</div>' +
-    '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">' +
-    (c.rotationBank||[]).map(function(r,ri){
-      return '<span class="tag tg" style="cursor:pointer" onclick="removeRotation('+c.id+','+ri+')">v '+esc(r.name)+' x</span>';
-    }).join('') +
-    '</div>' +
-    '<button class="btn bs" onclick="addRotationM('+c.id+')"><i class="ti ti-plus" style="font-size:11px"></i> Add to rotation</button>' +
+
+  // Rotation bank - one click from meals
+  html += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+    '<div class="card-title" style="margin-bottom:0">Rotation bank</div>' +
+    '<button class="btn bs" style="font-size:11px;padding:4px 10px" onclick="addRotationFromWeekM('+c.id+')"><i class="ti ti-plus" style="font-size:11px"></i> Add from this week</button>' +
   '</div>';
+
+  if(!c.rotationBank||!c.rotationBank.length){
+    html += '<div style="font-size:12px;color:var(--warm);font-style:italic">No rotation meals yet. Add meals clients love so the AI can reuse them.</div>';
+  } else {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:5px">';
+    for(var i=0;i<c.rotationBank.length;i++){
+      var r=c.rotationBank[i];
+      html += '<div style="display:flex;align-items:center;gap:4px;background:var(--sage-l);border-radius:6px;padding:4px 8px">' +
+        '<span style="font-size:12px;color:var(--sage-d)">'+esc(r.name)+'</span>' +
+        (r.components&&r.components.length?'<span style="font-size:10px;color:var(--warm)"> ('+r.components.length+' parts)</span>':'') +
+        '<button onclick="removeRotation('+c.id+','+i+')" style="background:none;border:none;cursor:pointer;color:var(--warm);font-size:12px;padding:0;line-height:1;margin-left:2px">x</button>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Previous weeks archive
+  if(c.weeklyHistory && c.weeklyHistory.length) {
+    html += '<div class="card"><div class="card-title">Previous weeks</div>';
+    for(var i=0;i<Math.min(3,c.weeklyHistory.length);i++){
+      var wk=c.weeklyHistory[i];
+      var totalMeals=0;
+      for(var d in wk.meals){totalMeals+=(wk.meals[d]||[]).length;}
+      html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--bdr)">' +
+        '<div style="font-size:13px">Week of '+esc(wk.weekOf)+'<span style="font-size:11px;color:var(--warm);margin-left:8px">'+totalMeals+' meals</span></div>' +
+        '<button class="btn" style="font-size:11px;padding:4px 8px" onclick="restoreWeek('+c.id+','+i+')">Restore</button>' +
+      '</div>';
+    }
+    html += '</div>';
+  }
+
   return html;
+}
+
+function archiveWeek(cid){
+  var c=gc(cid);if(!c)return;
+  if(!confirm('Start a new week? This will archive the current meals.'))return;
+  if(!c.weeklyHistory)c.weeklyHistory=[];
+  var hasMeals=false;
+  for(var d in c.weeklyMeals){if((c.weeklyMeals[d]||[]).length){hasMeals=true;break;}}
+  if(hasMeals){
+    c.weeklyHistory.unshift({weekOf:tod(),meals:JSON.parse(JSON.stringify(c.weeklyMeals))});
+    if(c.weeklyHistory.length>8)c.weeklyHistory=c.weeklyHistory.slice(0,8);
+  }
+  c.weeklyMeals={};
+  saveData();S.clientTab='meals';rClientDetail();
+}
+
+function restoreWeek(cid,idx){
+  var c=gc(cid);if(!c)return;
+  if(!confirm('Restore this week? Current meals will be archived.'))return;
+  if(!c.weeklyHistory||!c.weeklyHistory[idx])return;
+  var hasMeals=false;
+  for(var d in c.weeklyMeals){if((c.weeklyMeals[d]||[]).length){hasMeals=true;break;}}
+  if(hasMeals){
+    c.weeklyHistory.unshift({weekOf:tod(),meals:JSON.parse(JSON.stringify(c.weeklyMeals))});
+  }
+  c.weeklyMeals=JSON.parse(JSON.stringify(c.weeklyHistory[idx].meals));
+  saveData();S.clientTab='meals';rClientDetail();
+}
+
+function addRotationFromWeekM(cid){
+  var c=gc(cid);if(!c)return;
+  var meals=[];
+  for(var d=0;d<WDAYS.length;d++){
+    var day=WDAYS[d];
+    var ms=c.weeklyMeals[day]||[];
+    for(var i=0;i<ms.length;i++){meals.push({day:day,idx:i,meal:ms[i]});}
+  }
+  if(!meals.length){alert('No meals in this week yet.');return;}
+  var rows='';
+  for(var i=0;i<meals.length;i++){
+    var m=meals[i].meal;
+    var inRot=false;
+    if(c.rotationBank){for(var j=0;j<c.rotationBank.length;j++){if(c.rotationBank[j].name===m.name){inRot=true;break;}}}
+    rows+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--bdr)">' +
+      '<input type="checkbox" id="rfr-cb-'+i+'"'+(inRot?' disabled title="Already in rotation"':'')+' style="width:16px;height:16px;accent-color:var(--sage-d);flex-shrink:0">' +
+      '<div style="flex:1">' +
+        '<div style="font-size:13px;font-weight:500">'+esc(m.name)+'</div>' +
+        '<div style="font-size:11px;color:var(--warm)">'+esc(m.mealType||'Dinner')+' . '+meals[i].day+(inRot?' . Already in rotation':'')+'</div>' +
+      '</div>' +
+    '</div>';
+  }
+  openM('<h3 class="serif">Add to rotation bank</h3>' +
+    '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Select meals from this week to add to the rotation bank.</p>' +
+    rows +
+    '<button class="btn bd bfull" style="margin-top:1rem" onclick="saveRotationFromWeek('+cid+','+meals.length+')">Add selected</button>' +
+    '<button class="mlink" onclick="closeM()">Cancel</button>');
+  window._rfrMeals = meals;
+}
+
+function saveRotationFromWeek(cid, count){
+  var c=gc(cid);if(!c)return;
+  if(!c.rotationBank)c.rotationBank=[];
+  var added=0;
+  for(var i=0;i<count;i++){
+    var cb=document.getElementById('rfr-cb-'+i);
+    if(!cb||!cb.checked||cb.disabled)continue;
+    var m=window._rfrMeals[i].meal;
+    var inRot=false;
+    for(var j=0;j<c.rotationBank.length;j++){if(c.rotationBank[j].name===m.name){inRot=true;break;}}
+    if(!inRot){
+      c.rotationBank.push({name:m.name,mealType:m.mealType||'Dinner',components:[],stars:0,note:''});
+      added++;
+    }
+  }
+  saveData();closeM();
+  alert(added+' meal'+(added!==1?'s':'')+' added to rotation bank.');
+  S.clientTab='meals';rClientDetail();
 }
 
 function addMealM(cid, day) {
@@ -690,6 +835,18 @@ function rEditClient(c) {
   });
   var allergyList = (c.allergies||[]).join(', ');
   var dietList = (c.dietaryRestrictions||[]).join(', ');
+  // Coverage chefs checkboxes
+  var coverageHtml = '';
+  var chefTeam = TEAM.filter(function(u){return u.role==='chef' && u.id!==c.chefId;});
+  if(chefTeam.length){
+    coverageHtml = '<div class="fi" style="margin-bottom:10px"><label>Coverage chefs (can also see this client)</label><div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">';
+    for(var ci=0;ci<chefTeam.length;ci++){
+      var isC=(c.coverageChefs||[]).indexOf(chefTeam[ci].id)>=0;
+      coverageHtml+='<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">' +
+        '<input type="checkbox" id="cov-'+chefTeam[ci].id+'"'+(isC?' checked':'')+' style="width:15px;height:15px;accent-color:var(--sage-d)"> '+esc(chefTeam[ci].name.split(' ')[0])+'</label>';
+    }
+    coverageHtml += '</div></div>';
+  }
   return '<div class="card">' +
     '<div class="g2">' +
       '<div class="fi"><label>Display name (first + last initial)</label><input id="ec-name" value="'+esc(c.name||'')+'"></div>' +
@@ -698,6 +855,8 @@ function rEditClient(c) {
     '<div class="g2">' +
       '<div class="fi"><label>Assigned chef</label><select id="ec-chef">'+chefOpts+'</select></div>' +
     '</div>' +
+    coverageHtml +
+    '<div class="fi" style="margin-bottom:10px"><label>Weekly meal structure</label><input id="ec-structure" value="'+esc(c.weeklyMealStructure||'')+'" placeholder="e.g. 2 dinners, 2 lunches, 1 breakfast, 3 kids lunches"></div>' +
     '<div class="fi" style="margin-bottom:10px"><label>Allergies (comma separated)</label><input id="ec-allergy" value="'+esc(allergyList)+'" placeholder="e.g. Nuts, Shellfish"></div>' +
     '<div class="fi" style="margin-bottom:10px"><label>Dietary restrictions (comma separated)</label><input id="ec-diet" value="'+esc(dietList)+'" placeholder="e.g. Gluten-free, Dairy-free"></div>' +
     '<div class="fi" style="margin-bottom:10px"><label>Loves / safe foods</label><textarea id="ec-loves">'+esc(c.loves||'')+'</textarea></div>' +
@@ -717,11 +876,19 @@ function saveEditClient(id){
   c.name=$('ec-name').value.trim();
   c.serviceDay=$('ec-day').value;
   c.chefId=$('ec-chef').value;
+  c.weeklyMealStructure=$('ec-structure')?$('ec-structure').value:'';
   c.allergies=$('ec-allergy').value.split(',').map(function(s){return s.trim();}).filter(Boolean);
   c.dietaryRestrictions=$('ec-diet').value.split(',').map(function(s){return s.trim();}).filter(Boolean);
   c.loves=$('ec-loves').value;
   c.aversions=$('ec-aversions').value;
   c.notes=$('ec-notes').value;
+  // Save coverage chefs
+  var chefTeam=TEAM.filter(function(u){return u.role==='chef'&&u.id!==c.chefId;});
+  c.coverageChefs=[];
+  for(var i=0;i<chefTeam.length;i++){
+    var cb=document.getElementById('cov-'+chefTeam[i].id);
+    if(cb&&cb.checked)c.coverageChefs.push(chefTeam[i].id);
+  }
   saveData();alert('Saved!');S.clientTab='profile';rClientDetail();
 }
 
@@ -1163,7 +1330,8 @@ function buildSP(c){
     if(ms.length){var ns=[];for(var j=0;j<ms.length;j++)ns.push(ms[j].name);curM.push(day+': '+ns.join(', '));}
   }
   var chefN=(tu(c.chefId)?tu(c.chefId).name:'Chef').split(' ')[0];
-  return 'You are the AI menu planning assistant inside "The Table" -- built for Eddelbuttel Nutrition, owned by Brittany Eddelbuttel, RD.\nYou are helping '+chefN+' plan meals for '+c.name+'.\n\nFAMILY MEMBERS:\n'+(famSum.join('\n')||'Not added yet')+'\n\nALLERGIES -- NON-NEGOTIABLE:'+(alStr||'\nNo known allergies.')+'\n\nPREFERENCES:\nSafe foods / loves: '+(c.loves||'not specified')+'\nAversions / hard nos: '+(c.aversions||'none')+'\nNotes: '+(c.notes||'none')+'\n\nAPPROVED ROTATION MEALS: '+(rotM.join(', ')||'none yet')+'\n\nFEEDBACK HISTORY (most recent first):\n'+(rfb.join('\n')||'No feedback yet -- first week or client has not submitted.')+'\n\nTHIS WEEK\'S CURRENT MENU: '+(curM.join(' | ')||'Nothing planned yet')+'\n\nBEHAVIOR:\n- Speak directly to '+chefN+' the chef.\n- Always reference specific family details and feedback history.\n- The more feedback history exists, the smarter your suggestions should be.\n- If feedback shows a meal was thumbs down, never suggest it again.\n- If a client requests something specific next week, prioritize it.\n- Flag allergens immediately with (!) ALLERGY FLAG.\n- Suggest meals from the rotation bank when appropriate.\n- Be warm, specific, and practical.\n- When suggesting a weekly plan, format it clearly by day.';
+  var structure = c.weeklyMealStructure || '5 meals total';
+  return 'You are the AI menu planning assistant inside "The Table" -- built for Eddelbuttel Nutrition, owned by Brittany Eddelbuttel, RD.\nYou are helping '+chefN+' plan meals for '+c.name+'.\n\nWEEKLY MEAL STRUCTURE: '+structure+'\nWhen asked to plan the week, create exactly this many meals in this breakdown. Format by meal type (Breakfast/Lunch/Dinner/Kids Lunch) then assign to days. Add each meal to one specific day.\n\nFAMILY MEMBERS:\n'+(famSum.join('\n')||'Not added yet')+'\n\nALLERGIES -- NON-NEGOTIABLE:'+(alStr||'\nNo known allergies.')+'\n\nPREFERENCES:\nSafe foods / loves: '+(c.loves||'not specified')+'\nAversions / hard nos: '+(c.aversions||'none')+'\nNotes: '+(c.notes||'none')+'\n\nAPPROVED ROTATION MEALS (reuse these): '+(rotM.join(', ')||'none yet')+'\n\nFEEDBACK HISTORY (most recent first):\n'+(rfb.join('\n')||'No feedback yet.')+'\n\nTHIS WEEK CURRENT MENU: '+(curM.join(' | ')||'Nothing planned yet')+'\n\nBEHAVIOR:\n- Speak directly to '+chefN+' the chef.\n- When asked to plan the week, output EXACTLY the meal structure above -- no more, no less.\n- Format weekly plan as: DAY - MEAL TYPE: Dish name. One line per meal.\n- When you suggest meals, I will automatically add them to the weekly plan.\n- Always reference feedback history -- if thumbs down, never suggest again.\n- If client requests something specific, prioritize it.\n- Flag allergens immediately with (!) ALLERGY FLAG.\n- Be warm, specific, and practical.';
 }
 
 function buildAIIntro(c){
@@ -1292,27 +1460,65 @@ function sendAI(cid){
 }
 
 function parseAIMeals(text){
-  var meals=[];var lines=text.split('\n');
+  var meals=[];
+  var lines=text.split('\n');
+  var dayMap={'mon':'Mon','tue':'Tue','wed':'Wed','thu':'Thu','fri':'Fri','sat':'Sat','sun':'Sun',
+    'monday':'Mon','tuesday':'Tue','wednesday':'Wed','thursday':'Thu','friday':'Fri','saturday':'Sat','sunday':'Sun'};
+  var typeMap={'breakfast':'Breakfast','lunch':'Lunch','dinner':'Dinner','kids lunch':'Kids Lunch','snack':'Snack'};
+  var currentDay=WDAYS[0];
+  var currentType='Dinner';
   for(var i=0;i<lines.length;i++){
     var line=lines[i].trim();
-    var m=line.match(/^(?:\d+[\.\.\)]|[-*]|\*\*)\s*(.+?)(?:\*\*)?(?:\s*[-:].+)?$/);
-    if(m){var name=m[1].replace(/\*\*/g,'').trim();if(name.length>4&&name.length<80&&name.split(' ').length>=2)meals.push({name:name,day:WDAYS[meals.length%7]});}
+    if(!line)continue;
+    // Check for day assignment: "Monday - Dinner: Lemon chicken" or "Mon - Breakfast: Oatmeal"
+    var dayMatch=line.match(/^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|mon|tue|wed|thu|fri|sat|sun)\s*[-:]\s*(breakfast|lunch|dinner|kids lunch|snack)?[:\s]*(.+)?$/i);
+    if(dayMatch){
+      var dkey=(dayMatch[1]||'').toLowerCase();
+      if(dayMap[dkey])currentDay=dayMap[dkey];
+      if(dayMatch[2]&&typeMap[dayMatch[2].toLowerCase()])currentType=typeMap[dayMatch[2].toLowerCase()];
+      var mealName=(dayMatch[3]||'').replace(/\*\*/g,'').trim();
+      if(mealName&&mealName.length>3&&mealName.length<80){
+        meals.push({name:mealName,day:currentDay,mealType:currentType});
+      }
+      continue;
+    }
+    // Check for type header: "Breakfast:" or "Dinner:" 
+    var typeOnly=line.match(/^(breakfast|lunch|dinner|kids lunch|snack)\s*:?\s*$/i);
+    if(typeOnly){
+      if(typeMap[typeOnly[1].toLowerCase()])currentType=typeMap[typeOnly[1].toLowerCase()];
+      continue;
+    }
+    // Standard numbered/bulleted list
+    var m=line.match(/^(?:\d+[\.)\s]|[-*]|\*\*)\s*(.+?)(?:\*\*)?(?:\s*[-:]\s*.+)?$/);
+    if(m){
+      var name=m[1].replace(/\*\*/g,'').trim();
+      if(name.length>4&&name.length<80&&name.split(' ').length>=2&&!/^(breakfast|lunch|dinner|snack|monday|tuesday|wednesday|thursday|friday|saturday|sunday)/i.test(name)){
+        meals.push({name:name,day:currentDay,mealType:currentType});
+        // Advance day for next meal
+        var didx=WDAYS.indexOf(currentDay);
+        if(didx>=0&&didx<WDAYS.length-1)currentDay=WDAYS[didx+1];
+      }
+    }
   }
   return meals;
 }
 
 function addAIMealsM(cid,meals){
   var rows='';
+  var typeOpts=(['Breakfast','Lunch','Dinner','Kids Lunch','Snack']).map(function(t){return '<option>'+t+'</option>';}).join('');
   for(var i=0;i<meals.length;i++){
-    var dayOpts=WDAYS.map(function(d,j){return '<option value="'+d+'"'+(j===i%7?' selected':'')+'>'+d+'</option>';}).join('');
-    rows+='<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--bdr);flex-wrap:wrap">'+
+    var m=meals[i];
+    var dayOpts=WDAYS.map(function(d){return '<option value="'+d+'"'+(d===m.day?' selected':'')+'>'+d+'</option>';}).join('');
+    var typeOptsSelected=(['Breakfast','Lunch','Dinner','Kids Lunch','Snack']).map(function(t){return '<option'+(t===(m.mealType||'Dinner')?' selected':'')+'>'+t+'</option>';}).join('');
+    rows+='<div style="display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:0.5px solid var(--bdr);flex-wrap:wrap">'+
       '<input type="checkbox" id="aim-cb-'+i+'" checked style="width:16px;height:16px;accent-color:var(--sage-d);flex-shrink:0">'+
-      '<input id="aim-n-'+i+'" value="'+esc(meals[i].name)+'" style="flex:1;min-width:140px;padding:5px 8px;border:0.5px solid var(--bdr);border-radius:6px;font-family:Jost,sans-serif;font-size:12px">'+
+      '<input id="aim-n-'+i+'" value="'+esc(m.name)+'" style="flex:2;min-width:120px;padding:5px 8px;border:0.5px solid var(--bdr);border-radius:6px;font-family:Jost,sans-serif;font-size:12px">'+
+      '<select id="aim-t-'+i+'" style="padding:5px 8px;border:0.5px solid var(--bdr);border-radius:6px;font-family:Jost,sans-serif;font-size:12px">'+typeOptsSelected+'</select>'+
       '<select id="aim-d-'+i+'" style="padding:5px 8px;border:0.5px solid var(--bdr);border-radius:6px;font-family:Jost,sans-serif;font-size:12px">'+dayOpts+'</select>'+
     '</div>';
   }
   openM('<h3 class="serif">Add meals to weekly plan</h3>'+
-    '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Uncheck any you don\'t want. Adjust the day if needed.</p>'+
+    '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Review each meal. Uncheck any you do not want.</p>'+
     rows+
     '<button class="btn bd bfull" style="margin-top:1rem" onclick="confirmAddAIMeals('+cid+','+meals.length+')"><i class="ti ti-plus"></i> Add to plan</button>'+
     '<button class="mlink" onclick="closeM()">Cancel</button>');
@@ -1328,7 +1534,9 @@ function confirmAddAIMeals(cid,count){
     var name=nameEl.value.trim();var day=dayEl.value;if(!name)continue;
     if(!c.weeklyMeals)c.weeklyMeals={};
     if(!c.weeklyMeals[day])c.weeklyMeals[day]=[];
-    c.weeklyMeals[day].push({id:'m'+Date.now()+i,name:name,mealType:'Dinner',notes:'Added from AI'});
+    var typeEl=document.getElementById('aim-t-'+i);
+    var mtype=typeEl?typeEl.value:'Dinner';
+    c.weeklyMeals[day].push({id:'m'+Date.now()+i,name:name,mealType:mtype,notes:'Added from AI'});
     added++;
   }
   saveData();closeM();
