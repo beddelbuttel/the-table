@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="The Table">
@@ -23,12 +23,12 @@
   --amber:#ef9f27;--amber-l:#faeeda;--amber-d:#633806;
   --gold:#a07830;--gold-l:#fdf6e8;
 }
-body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--warm-d);font-size:14px;min-height:100vh;-webkit-text-size-adjust:100%}
+body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--warm-d);font-size:14px;height:100vh;overflow:hidden;-webkit-text-size-adjust:100%;-webkit-overflow-scrolling:touch;overscroll-behavior:none;touch-action:pan-x pan-y;position:fixed;width:100%;}
 .serif{font-family:'Cormorant Garamond',Georgia,serif}
 .hidden{display:none !important}
 
 /* ── LOGIN ── */
-.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;background:var(--cream)}
+.login-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;padding:2rem;background:var(--cream);overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .brand{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:400;color:var(--warm);text-align:center}
 .sub{font-size:11px;letter-spacing:.18em;color:var(--sage);margin-top:6px;text-transform:uppercase;text-align:center}
 .login-card{background:#fff;border:0.5px solid var(--bdr);border-radius:14px;padding:2rem;width:100%;max-width:390px;margin-top:1.5rem}
@@ -43,9 +43,9 @@ body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--warm-d);f
 .lerr{background:var(--red-l);border:0.5px solid var(--red);color:var(--red-d);padding:9px 12px;border-radius:8px;font-size:13px;margin-bottom:1rem}
 
 /* ── APP SHELL ── */
-#app{display:none;flex-direction:column;min-height:100vh}
+#app{display:none;flex-direction:column;height:100vh;overflow:hidden;position:fixed;width:100%;top:0;left:0;}
 #app.visible{display:flex}
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:#fff;border-bottom:0.5px solid var(--bdr);flex-shrink:0}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;padding-top:calc(10px + env(safe-area-inset-top));background:#fff;border-bottom:0.5px solid var(--bdr);flex-shrink:0}
 .topbar-brand{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--warm)}
 .topbar-brand em{font-style:normal;color:var(--sage);font-size:11px;font-family:'Jost',sans-serif;margin-left:10px;letter-spacing:.1em;text-transform:uppercase}
 .avbtn{width:32px;height:32px;border-radius:50%;background:var(--sage-l);border:none;cursor:pointer;font-size:13px;font-weight:500;color:var(--sage-d);font-family:'Jost',sans-serif}
@@ -53,8 +53,8 @@ body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--warm-d);f
 .nbtn2{padding:10px 14px;font-size:12px;color:var(--warm);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;font-family:'Jost',sans-serif;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .nbtn2:hover{color:var(--warm-d)}
 .nbtn2.active{color:var(--sage-d);border-bottom-color:var(--sage)}
-.pages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-.page{display:none;padding:1.25rem 1.5rem}
+.pages{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;}
+.page{display:none;padding:1.25rem 1.5rem;padding-bottom:calc(1.25rem + env(safe-area-inset-bottom));}
 .page.active{display:block}
 
 /* ── COMPONENTS ── */
@@ -194,13 +194,13 @@ body{font-family:'Jost',sans-serif;background:var(--cream);color:var(--warm-d);f
 <div class="mov" id="mov"><div class="mbox" id="mbox"></div></div>
 
 <script>
-// ── CONSTANTS ────────────────────────────────────────────────────────────────
+// -- CONSTANTS ----------------------------------------------------------------
 var WDAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 var MTYPES = ['Dinner','Breakfast','Lunch','Snack'];
 var DIET_TAGS = ['Vegan','Vegetarian','Pescatarian','Gluten-free','Dairy-free','Nut-free','Egg-free','Kid-friendly'];
 var CCOLORS = ['#c0dd97','#9FE1CB','#B5D4F4','#FAC775','#AFA9EC'];
 
-// ── NAV CONFIG — 4 sections only ─────────────────────────────────────────────
+// -- NAV CONFIG -- 4 sections only ---------------------------------------------
 var NAVCFG = {
   dietitian: ['clients','ai','recipes','feedback','team'],
   chef:      ['clients','ai','recipes','feedback'],
@@ -209,14 +209,14 @@ var NAVCFG = {
 var NAVLBL = {clients:'Clients',ai:'AI Assistant',recipes:'Recipes',feedback:'Feedback',team:'Team'};
 var NAVICO = {clients:'ti-users',ai:'ti-robot',recipes:'ti-book',feedback:'ti-star',team:'ti-settings'};
 
-// ── STATE ────────────────────────────────────────────────────────────────────
+// -- STATE --------------------------------------------------------------------
 var S = {
   role:'chef', uid:'u2', page:'clients', wsCid:0,
   clientTab:'profile', aiH:{}, recEdit:null,
   recFilter:'All', recTagFilter:[]
 };
 
-// ── TEAM ─────────────────────────────────────────────────────────────────────
+// -- TEAM ---------------------------------------------------------------------
 var TEAM = [
   {id:'u1',name:'Brittany Eddelbuttel',role:'dietitian',email:'brittany@eddelbuttel.com',password:'diet123',color:'#B5D4F4'},
   {id:'u2',name:'Brandy Barnes',role:'chef',email:'brandyrbarnes0@gmail.com',password:'chef123',color:'#c0dd97'},
@@ -227,7 +227,7 @@ var TEAM = [
 var CLIENTS = [];
 var RECIPES = [];
 
-// ── PERSISTENCE ──────────────────────────────────────────────────────────────
+// -- PERSISTENCE --------------------------------------------------------------
 function saveData() {
   try {
     localStorage.setItem('thetable_v2', JSON.stringify({CLIENTS:CLIENTS, TEAM:TEAM, RECIPES:RECIPES, AI_HISTORY:S.aiH}));
@@ -246,7 +246,7 @@ function loadData() {
 }
 loadData();
 
-// ── HELPERS ──────────────────────────────────────────────────────────────────
+// -- HELPERS ------------------------------------------------------------------
 function $(id) { return document.getElementById(id); }
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function tod() { return new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
@@ -259,14 +259,14 @@ function myC() {
   return out;
 }
 function stars(n) {
-  var s=''; for(var i=1;i<=5;i++) s+=(i<=n?'★':'☆'); return s;
+  var s=''; for(var i=1;i<=5;i++) s+=(i<=n?'*':'o'); return s;
 }
 function mtb(t) {
   var c={Dinner:'tg',Breakfast:'tb',Lunch:'ta',Snack:''};
   return '<span class="tag '+(c[t]||'')+'">'+esc(t)+'</span>';
 }
 
-// ── LOGIN ────────────────────────────────────────────────────────────────────
+// -- LOGIN --------------------------------------------------------------------
 function doLogin() {
   var e=$('lemail').value.trim().toLowerCase();
   var p=$('lpw').value;
@@ -294,7 +294,7 @@ function signOut(){
 $('lpw').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
 $('lemail').addEventListener('keydown',function(e){if(e.key==='Enter')$('lpw').focus();});
 
-// ── NAV ──────────────────────────────────────────────────────────────────────
+// -- NAV ----------------------------------------------------------------------
 function buildNav() {
   var pages=NAVCFG[S.role]||['clients'];
   var h='';
@@ -317,7 +317,7 @@ function go(name) {
   if(fns[name])fns[name]();
 }
 
-// ── CLIENTS PAGE ─────────────────────────────────────────────────────────────
+// -- CLIENTS PAGE -------------------------------------------------------------
 function rClients() {
   var cl = myC();
   var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">' +
@@ -342,9 +342,9 @@ function rClients() {
         '<div style="display:flex;justify-content:space-between;align-items:flex-start">' +
           '<div>' +
             '<div class="cc-name">'+esc(c.name)+'</div>' +
-            '<div class="cc-sub">' + (chef?'Chef: '+chef.name.split(' ')[0]:'Unassigned') + (c.serviceDay?' · '+c.serviceDay+'s':'') + '</div>' +
+            '<div class="cc-sub">' + (chef?'Chef: '+chef.name.split(' ')[0]:'Unassigned') + (c.serviceDay?' . '+c.serviceDay+'s':'') + '</div>' +
           '</div>' +
-          (lf?'<span class="tag ta" style="flex-shrink:0">★ '+lf.overallRating+'/5 last week</span>':'<span class="tag" style="flex-shrink:0">No feedback yet</span>') +
+          (lf?'<span class="tag ta" style="flex-shrink:0">* '+lf.overallRating+'/5 last week</span>':'<span class="tag" style="flex-shrink:0">No feedback yet</span>') +
         '</div>' +
         (badges?'<div style="margin-top:4px">'+badges+'</div>':'') +
       '</div>';
@@ -379,7 +379,7 @@ function rClientDetail() {
   $('p-clients').innerHTML = back + '<h2 class="serif" style="font-size:22px;font-weight:400;margin-bottom:4px">'+esc(c.name)+'</h2>' +
     '<div style="font-size:12px;color:var(--warm);margin-bottom:1rem">'+
       (tu(c.chefId)?'Chef: '+tu(c.chefId).name.split(' ')[0]:'Unassigned') +
-      (c.serviceDay?' · Service: '+c.serviceDay+'s':'') +
+      (c.serviceDay?' . Service: '+c.serviceDay+'s':'') +
     '</div>' +
     tabHtml + content;
 }
@@ -387,11 +387,11 @@ function rClientDetail() {
 function rProfile(c) {
   var lf = c.feedbackHistory && c.feedbackHistory.length ? c.feedbackHistory[0] : null;
   var html = '';
-  // Allergies — red alert
+  // Allergies -- red alert
   if(c.allergies && c.allergies.length) {
     html += '<div class="card" style="border-color:var(--red);background:var(--red-l)">' +
-      '<div class="card-title" style="color:var(--red-d)"><i class="ti ti-alert-triangle"></i> Allergies — never use</div>' +
-      '<div style="font-size:14px;font-weight:500;color:var(--red-d)">'+c.allergies.join(' · ')+'</div>' +
+      '<div class="card-title" style="color:var(--red-d)"><i class="ti ti-alert-triangle"></i> Allergies -- never use</div>' +
+      '<div style="font-size:14px;font-weight:500;color:var(--red-d)">'+c.allergies.join(' . ')+'</div>' +
     '</div>';
   }
   // Dietary
@@ -403,8 +403,8 @@ function rProfile(c) {
   // Preferences
   html += '<div class="card"><div class="card-title">Food preferences</div>' +
     '<div class="g2">' +
-      '<div><div style="font-size:11px;color:var(--warm);margin-bottom:4px">✓ Loves</div><div style="font-size:13px">'+esc(c.loves||'—')+'</div></div>' +
-      '<div><div style="font-size:11px;color:var(--warm);margin-bottom:4px">✗ Dislikes / hard no\'s</div><div style="font-size:13px">'+esc(c.aversions||'—')+'</div></div>' +
+      '<div><div style="font-size:11px;color:var(--warm);margin-bottom:4px">v Loves</div><div style="font-size:13px">'+esc(c.loves||'--')+'</div></div>' +
+      '<div><div style="font-size:11px;color:var(--warm);margin-bottom:4px">x Dislikes / hard no\'s</div><div style="font-size:13px">'+esc(c.aversions||'--')+'</div></div>' +
     '</div>' +
     (c.notes?'<div style="font-size:12px;color:var(--warm);margin-top:6px;font-style:italic">'+esc(c.notes)+'</div>':'') +
   '</div>';
@@ -416,7 +416,7 @@ function rProfile(c) {
       html += '<div style="padding:6px 0;border-bottom:0.5px solid var(--bdr);font-size:13px">' +
         '<strong>'+esc(m.name)+'</strong>' +
         (m.role==='child'?' <span class="tag" style="font-size:10px">child'+( m.age?', '+m.age:'')+'</span>':'') +
-        (m.allergies&&m.allergies.length?' <span class="tag tr2" style="font-size:10px">⚠️ '+m.allergies.join(', ')+'</span>':'') +
+        (m.allergies&&m.allergies.length?' <span class="tag tr2" style="font-size:10px">(!) '+m.allergies.join(', ')+'</span>':'') +
         (m.notes?'<div style="font-size:11px;color:var(--warm);margin-top:2px">'+esc(m.notes)+'</div>':'') +
       '</div>';
     }
@@ -424,13 +424,13 @@ function rProfile(c) {
   }
   // Latest feedback summary
   if(lf) {
-    html += '<div class="card"><div class="card-title">Latest feedback — week of '+esc(lf.weekOf)+'</div>' +
+    html += '<div class="card"><div class="card-title">Latest feedback -- week of '+esc(lf.weekOf)+'</div>' +
       '<div style="font-size:14px;font-weight:500;margin-bottom:4px">'+stars(lf.overallRating)+' '+lf.overallRating+'/5</div>' +
       (lf.overallNote?'<div style="font-size:13px;font-style:italic;color:var(--warm-d);margin-bottom:8px">"'+esc(lf.overallNote)+'"</div>':'') +
       '<div class="fb-meals">' +
         (lf.meals||[]).map(function(m){
           return '<span class="tag '+(m.thumbs==='up'?'tg':m.thumbs==='down'?'tr2':'')+'">'+
-            (m.thumbs==='up'?'👍 ':m.thumbs==='down'?'👎 ':'')+esc(m.name)+'</span>';
+            (m.thumbs==='up'?'&#x1F44D; ':m.thumbs==='down'?'&#x1F44E; ':'')+esc(m.name)+'</span>';
         }).join('') +
       '</div>' +
     '</div>';
@@ -439,7 +439,7 @@ function rProfile(c) {
   if(c.rotationBank && c.rotationBank.length) {
     html += '<div class="card"><div class="card-title">Approved rotation (' + c.rotationBank.length + ' meals)</div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:5px">' +
-      c.rotationBank.slice(0,10).map(function(r){return '<span class="tag tg">✓ '+esc(r.name)+'</span>';}).join('') +
+      c.rotationBank.slice(0,10).map(function(r){return '<span class="tag tg">v '+esc(r.name)+'</span>';}).join('') +
       (c.rotationBank.length>10?'<span class="tag">+more</span>':'') +
       '</div></div>';
   }
@@ -448,7 +448,7 @@ function rProfile(c) {
   return html;
 }
 
-// ── MEALS TAB ────────────────────────────────────────────────────────────────
+// -- MEALS TAB ----------------------------------------------------------------
 function rMeals(c) {
   if(!c.weeklyMeals) c.weeklyMeals = {};
   var html = '<div class="card"><div class="card-title">This week\'s meal plan</div>' +
@@ -461,7 +461,7 @@ function rMeals(c) {
       var m=meals[j];
       html += '<div class="meal-chip" onclick="editMealM('+c.id+',\''+day+'\','+j+')">' +
         '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:10px">'+esc(m.name)+'</span>' +
-        '<button class="meal-chip-del" onclick="event.stopPropagation();delMeal('+c.id+',\''+day+'\','+j+')">×</button>' +
+        '<button class="meal-chip-del" onclick="event.stopPropagation();delMeal('+c.id+',\''+day+'\','+j+')">x</button>' +
       '</div>';
     }
     html += '<button class="add-meal-btn" onclick="addMealM('+c.id+',\''+day+'\')"><i class="ti ti-plus" style="font-size:10px"></i> Add</button>';
@@ -472,7 +472,7 @@ function rMeals(c) {
   html += '<div class="card"><div class="card-title">Rotation bank</div>' +
     '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">' +
     (c.rotationBank||[]).map(function(r,ri){
-      return '<span class="tag tg" style="cursor:pointer" onclick="removeRotation('+c.id+','+ri+')">✓ '+esc(r.name)+' ×</span>';
+      return '<span class="tag tg" style="cursor:pointer" onclick="removeRotation('+c.id+','+ri+')">v '+esc(r.name)+' x</span>';
     }).join('') +
     '</div>' +
     '<button class="btn bs" onclick="addRotationM('+c.id+')"><i class="ti ti-plus" style="font-size:11px"></i> Add to rotation</button>' +
@@ -481,7 +481,7 @@ function rMeals(c) {
 }
 
 function addMealM(cid, day) {
-  openM('<h3 class="serif">Add meal — '+day+'</h3>' +
+  openM('<h3 class="serif">Add meal -- '+day+'</h3>' +
     '<div class="fg"><label>Meal name</label><input id="am-name" placeholder="e.g. Lemon herb chicken"></div>' +
     '<div class="fg"><label>Type</label><select id="am-type">' + MTYPES.map(function(t){return '<option>'+t+'</option>';}).join('') + '</select></div>' +
     '<div class="fg"><label>Notes (optional)</label><input id="am-notes" placeholder="Serving notes, packaging..."></div>' +
@@ -557,18 +557,18 @@ function removeRotation(cid,idx){
   saveData();S.clientTab='meals';rClientDetail();
 }
 
-// ── CHECKLIST TAB ────────────────────────────────────────────────────────────
+// -- CHECKLIST TAB ------------------------------------------------------------
 var CL_SECTIONS = [
   {s:'Pre-service',items:[
-    'Reviewed all allergies — confirmed no restricted ingredients',
+    'Reviewed all allergies -- confirmed no restricted ingredients',
     'All dietary restrictions reviewed',
     'Food preferences and aversions reviewed',
-    'Menu confirmed — no conflicts with client profile',
+    'Menu confirmed -- no conflicts with client profile',
     'Entry instructions checked (key, code, parking, pets)',
     'All ingredients sourced and confirmed'
   ]},
   {s:'During service',items:[
-    'Cleaned as I went — no pile-up at the end',
+    'Cleaned as I went -- no pile-up at the end',
     'Separate cutting boards for proteins and produce',
     'Client\'s spice level followed exactly',
     'All client food preferences respected in every dish',
@@ -580,7 +580,7 @@ var CL_SECTIONS = [
     'All dishes, pots, pans washed and completely dried',
     'Countertops, stovetop, backsplash, sink fully wiped',
     'Kitchen floor swept',
-    'Trash removed — all the way to outdoor bins'
+    'Trash removed -- all the way to outdoor bins'
   ]},
   {s:'Final walk-through',items:[
     'Full walk-through completed before leaving',
@@ -623,14 +623,14 @@ function clearChecklist(cid){
   saveData();S.clientTab='checklist';rClientDetail();
 }
 
-// ── EDIT CLIENT (dietitian only) ─────────────────────────────────────────────
+// -- EDIT CLIENT (dietitian only) ---------------------------------------------
 function rEditClient(c) {
-  var chefOpts='<option value="">— Unassigned —</option>';
+  var chefOpts='<option value="">-- Unassigned --</option>';
   for(var i=0;i<TEAM.length;i++){
     if(TEAM[i].role==='chef')
       chefOpts+='<option value="'+TEAM[i].id+'"'+(TEAM[i].id===c.chefId?' selected':'')+'>'+esc(TEAM[i].name)+'</option>';
   }
-  var dayOpts='<option value="">— Select —</option>';
+  var dayOpts='<option value="">-- Select --</option>';
   ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'].forEach(function(d){
     dayOpts+='<option'+(c.serviceDay===d?' selected':'')+'>'+d+'</option>';
   });
@@ -678,8 +678,8 @@ function editFamilyM(cid){
   for(var i=0;i<members.length;i++){
     var m=members[i];
     rows+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--bdr)">' +
-      '<span style="flex:1;font-size:13px">'+esc(m.name)+(m.role==='child'?' (child'+( m.age?', '+m.age:'')+')':', adult')+(m.allergies&&m.allergies.length?' ⚠️ '+m.allergies.join(', '):'')+'</span>' +
-      '<button class="btn br" style="padding:3px 7px;font-size:11px" onclick="removeFamilyMember('+cid+','+i+')">×</button>' +
+      '<span style="flex:1;font-size:13px">'+esc(m.name)+(m.role==='child'?' (child'+( m.age?', '+m.age:'')+')':', adult')+(m.allergies&&m.allergies.length?' (!) '+m.allergies.join(', '):'')+'</span>' +
+      '<button class="btn br" style="padding:3px 7px;font-size:11px" onclick="removeFamilyMember('+cid+','+i+')">x</button>' +
     '</div>';
   }
   openM('<h3 class="serif">Family members</h3>' +
@@ -729,10 +729,10 @@ function addClientM(){
 
 function showManualClientForm(){
   openM('<h3 class="serif">Add new client</h3>' +
-    '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Use first name and last initial only — e.g. "Sarah M."</p>' +
+    '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Use first name and last initial only -- e.g. "Sarah M."</p>' +
     '<div class="fg"><label>Display name</label><input id="nc-name" placeholder="Sarah M."></div>' +
-    '<div class="fg"><label>Service day</label><select id="nc-day"><option value="">— Select —</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></div>' +
-    '<div class="fg"><label>Assign chef</label><select id="nc-chef"><option value="">— Unassigned —</option>' +
+    '<div class="fg"><label>Service day</label><select id="nc-day"><option value="">-- Select --</option><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option></select></div>' +
+    '<div class="fg"><label>Assign chef</label><select id="nc-chef"><option value="">-- Unassigned --</option>' +
       TEAM.filter(function(u){return u.role==='chef';}).map(function(u){return '<option value="'+u.id+'">'+esc(u.name)+'</option>';}).join('') +
     '</select></div>' +
     '<button class="btn bd bfull" onclick="saveNewClient()">Add client</button>' +
@@ -740,7 +740,7 @@ function showManualClientForm(){
 }
 
 function showAIProfileBuilder(){
-  var chefOpts='<option value="">— Unassigned —</option>'+TEAM.filter(function(u){return u.role==='chef';}).map(function(u){return '<option value="'+u.id+'">'+esc(u.name)+'</option>';}).join('');
+  var chefOpts='<option value="">-- Unassigned --</option>'+TEAM.filter(function(u){return u.role==='chef';}).map(function(u){return '<option value="'+u.id+'">'+esc(u.name)+'</option>';}).join('');
   openM('<h3 class="serif">Build profile with AI</h3>' +
     '<p style="font-size:13px;color:var(--warm);margin-bottom:1rem">Tell the AI everything you know about this family in plain language. It will create the full client profile automatically.</p>' +
     '<div class="fg"><label>Describe the family</label>' +
@@ -787,7 +787,7 @@ function buildProfileWithAI(){
         // Seed AI history with the description so it remembers from day one
         if(!S.aiH[newClient.id])S.aiH[newClient.id]=[];
         S.aiH[newClient.id].push({role:'user',content:'Here is everything I know about this client so far: '+desc,intro:false});
-        S.aiH[newClient.id].push({role:'assistant',content:"Got it — I've built "+newClient.name+"'s profile from what you shared. I'll remember all of this as we plan together. You can keep telling me more at any time and I'll factor it in. What would you like to start with?",intro:true});
+        S.aiH[newClient.id].push({role:'assistant',content:"Got it -- I've built "+newClient.name+"'s profile from what you shared. I'll remember all of this as we plan together. You can keep telling me more at any time and I'll factor it in. What would you like to start with?",intro:true});
         saveData();
         closeM();
         S.wsCid=newClient.id;
@@ -826,7 +826,7 @@ function delClientConfirm(id){
   saveData();go('clients');
 }
 
-// ── FEEDBACK PAGE ────────────────────────────────────────────────────────────
+// -- FEEDBACK PAGE ------------------------------------------------------------
 function rFeedback() {
   var cl = myC();
   var html = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">' +
@@ -857,7 +857,7 @@ function rFeedback() {
       '<input id="fb-link-input" value="'+esc(fbUrl)+'" readonly>' +
       '<button class="btn bs" onclick="copyFbLink()"><i class="ti ti-copy" style="font-size:13px"></i> Copy</button>' +
     '</div>' +
-    '<p style="font-size:11px;color:var(--warm);margin-top:6px;font-style:italic">Send every week after service. Client just taps the link — no login needed.</p>' +
+    '<p style="font-size:11px;color:var(--warm);margin-top:6px;font-style:italic">Send every week after service. Client just taps the link -- no login needed.</p>' +
   '</div>';
 
   // Feedback history
@@ -883,7 +883,7 @@ function rFeedback() {
         '<div class="fb-meals">' +
           (fb.meals||[]).map(function(m){
             return '<span class="tag '+(m.thumbs==='up'?'tg':m.thumbs==='down'?'tr2':'')+'">'+
-              (m.thumbs==='up'?'👍 ':m.thumbs==='down'?'👎 ':'')+esc(m.name)+
+              (m.thumbs==='up'?'&#x1F44D; ':m.thumbs==='down'?'&#x1F44E; ':'')+esc(m.name)+
               (m.again==='with tweaks'?' (tweak)':m.again==='no'?' (no repeat)':'')+'</span>';
           }).join('') +
         '</div>' +
@@ -913,15 +913,15 @@ function manualFbM(cid){
   for(var i=0;i<meals.length;i++){
     mealRows+='<div class="meal-fb-row">' +
       '<span class="meal-fb-name">'+esc(meals[i])+'</span>' +
-      '<button class="thumb-btn" id="mfb-'+i+'-up" onclick="setThumb('+i+',\'up\')">👍</button>' +
-      '<button class="thumb-btn" id="mfb-'+i+'-down" onclick="setThumb('+i+',\'down\')">👎</button>' +
+      '<button class="thumb-btn" id="mfb-'+i+'-up" onclick="setThumb('+i+',\'up\')">(+1)</button>' +
+      '<button class="thumb-btn" id="mfb-'+i+'-down" onclick="setThumb('+i+',\'down\')">(-1)</button>' +
     '</div>';
   }
-  openM('<h3 class="serif">Add feedback — '+esc(c.name)+'</h3>' +
+  openM('<h3 class="serif">Add feedback -- '+esc(c.name)+'</h3>' +
     '<div class="fg"><label>Week of</label><input id="mfb-week" type="date" value="'+new Date().toISOString().split('T')[0]+'"></div>' +
     '<div class="fg"><label>Overall rating</label>' +
       '<div class="star-row" id="mfb-stars">' +
-        [1,2,3,4,5].map(function(n){return '<button class="star-btn" id="mfb-star-'+n+'" onclick="setFbStar('+n+')">☆</button>';}).join('') +
+        [1,2,3,4,5].map(function(n){return '<button class="star-btn" id="mfb-star-'+n+'" onclick="setFbStar('+n+')">o</button>';}).join('') +
       '</div>' +
     '</div>' +
     (mealRows?'<div class="fg"><label>Per-meal ratings</label>'+mealRows+'</div>':'') +
@@ -938,7 +938,7 @@ function setFbStar(n){
   window._fbRating=n;
   for(var i=1;i<=5;i++){
     var b=$('mfb-star-'+i);
-    if(b)b.textContent=i<=n?'★':'☆';
+    if(b)b.textContent=i<=n?'*':'o';
     if(b)b.classList.toggle('on',i<=n);
   }
 }
@@ -990,7 +990,7 @@ function saveFb(cid, source){
   rFeedback();
 }
 
-// ── PUBLIC FEEDBACK FORM ─────────────────────────────────────────────────────
+// -- PUBLIC FEEDBACK FORM -----------------------------------------------------
 function showPublicFeedback(cid) {
   var c = gc(cid);
   document.body.innerHTML = '';
@@ -1012,8 +1012,8 @@ function showPublicFeedback(cid) {
   for(var i=0;i<meals.length;i++){
     mealRows+='<div class="meal-fb-row" style="margin-bottom:4px">' +
       '<span class="meal-fb-name">'+esc(meals[i])+'</span>' +
-      '<button class="thumb-btn" id="pub-mfb-'+i+'-up" onclick="setPubThumb('+i+',\'up\')">👍</button>' +
-      '<button class="thumb-btn" id="pub-mfb-'+i+'-down" onclick="setPubThumb('+i+',\'down\')">👎</button>' +
+      '<button class="thumb-btn" id="pub-mfb-'+i+'-up" onclick="setPubThumb('+i+',\'up\')">(+1)</button>' +
+      '<button class="thumb-btn" id="pub-mfb-'+i+'-down" onclick="setPubThumb('+i+',\'down\')">(-1)</button>' +
     '</div>';
   }
   document.body.innerHTML =
@@ -1028,7 +1028,7 @@ function showPublicFeedback(cid) {
       '<div class="card">' +
         '<div class="card-title">Overall rating for the week</div>' +
         '<div class="star-row" id="pub-stars">' +
-          [1,2,3,4,5].map(function(n){return '<button class="star-btn" id="pub-star-'+n+'" onclick="setPubStar('+n+')" style="font-size:30px">☆</button>';}).join('') +
+          [1,2,3,4,5].map(function(n){return '<button class="star-btn" id="pub-star-'+n+'" onclick="setPubStar('+n+')" style="font-size:30px">o</button>';}).join('') +
         '</div>' +
       '</div>' +
       (meals.length?'<div class="card"><div class="card-title">Rate each meal</div>'+mealRows+'</div>':'') +
@@ -1037,7 +1037,7 @@ function showPublicFeedback(cid) {
         '<div class="fg" style="margin-bottom:0"><label>Anything you\'d like to see next week?</label><input id="pub-next" placeholder="Cuisine, specific dish, something new..."></div>' +
       '</div>' +
       '<button class="btn-primary" onclick="submitPublicFb('+cid+')">Submit feedback</button>' +
-      '<div style="text-align:center;font-size:11px;color:var(--warm);margin-top:1rem">Your feedback goes directly to your chef. Thank you! 🙏</div>' +
+      '<div style="text-align:center;font-size:11px;color:var(--warm);margin-top:1rem">Your feedback goes directly to your chef. Thank you! </div>' +
     '</div>';
 }
 
@@ -1045,7 +1045,7 @@ function setPubStar(n){
   window._fbRatingPublic=n;
   for(var i=1;i<=5;i++){
     var b=$('pub-star-'+i);
-    if(b){b.textContent=i<=n?'★':'☆';b.style.color=i<=n?'#ef9f27':'#ddd';}
+    if(b){b.textContent=i<=n?'*':'o';b.style.color=i<=n?'#ef9f27':'#ddd';}
   }
 }
 
@@ -1064,11 +1064,11 @@ function submitPublicFb(cid){
   saveFb(cid,'client');
   document.body.innerHTML='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:Jost,sans-serif;text-align:center;padding:2rem;background:#faf8f5">' +
     '<div style="font-family:\'Cormorant Garamond\',serif;font-size:32px;color:#7a7370;margin-bottom:8px">Thank you!</div>' +
-    '<div style="font-size:14px;color:#7a7370">Your feedback has been sent to your chef.<br>We\'ll see you next week. 🌿</div>' +
+    '<div style="font-size:14px;color:#7a7370">Your feedback has been sent to your chef.<br>We\'ll see you next week. </div>' +
   '</div>';
 }
 
-// ── CHECK FOR PUBLIC FEEDBACK URL ────────────────────────────────────────────
+// -- CHECK FOR PUBLIC FEEDBACK URL --------------------------------------------
 (function(){
   var params = new URLSearchParams(window.location.search);
   var fbId = params.get('feedback');
@@ -1078,12 +1078,12 @@ function submitPublicFb(cid){
   }
 })();
 
-// ── AI ASSISTANT ─────────────────────────────────────────────────────────────
+// -- AI ASSISTANT -------------------------------------------------------------
 function buildSP(c){
   var alStr='';
   if(c.allergies&&c.allergies.length){
     for(var i=0;i<c.allergies.length;i++){
-      alStr+='\n⚠️ '+c.allergies[i].toUpperCase()+' — NEVER suggest anything containing this. Flag immediately with ⚠️ ALLERGY FLAG.';
+      alStr+='\n(!) '+c.allergies[i].toUpperCase()+' -- NEVER suggest anything containing this. Flag immediately with (!) ALLERGY FLAG.';
     }
   }
   var famSum=[];
@@ -1099,7 +1099,7 @@ function buildSP(c){
     for(var i=0;i<Math.min(4,c.feedbackHistory.length);i++){
       var fb=c.feedbackHistory[i];
       var mStr=[];var ms=fb.meals||[];
-      for(var j=0;j<ms.length;j++){mStr.push(ms[j].name+' '+(ms[j].thumbs==='up'?'👍':'ms[j].thumbs==="down"?👎:—'));}
+      for(var j=0;j<ms.length;j++){mStr.push(ms[j].name+' '+(ms[j].thumbs==='up'?'(+1)':'ms[j].thumbs==="down"?(-1):--'));}
       rfb.push('Week of '+fb.weekOf+': '+fb.overallRating+'/5. "'+(fb.overallNote||'')+'"'+(fb.nextWeek?' Wants: '+fb.nextWeek:'')+(mStr.length?'. Meals: '+mStr.join(', '):''));
     }
   }
@@ -1109,7 +1109,7 @@ function buildSP(c){
     if(ms.length){var ns=[];for(var j=0;j<ms.length;j++)ns.push(ms[j].name);curM.push(day+': '+ns.join(', '));}
   }
   var chefN=(tu(c.chefId)?tu(c.chefId).name:'Chef').split(' ')[0];
-  return 'You are the AI menu planning assistant inside "The Table" — built for Eddelbuttel Nutrition, owned by Brittany Eddelbuttel, RD.\nYou are helping '+chefN+' plan meals for '+c.name+'.\n\nFAMILY MEMBERS:\n'+(famSum.join('\n')||'Not added yet')+'\n\nALLERGIES — NON-NEGOTIABLE:'+(alStr||'\nNo known allergies.')+'\n\nPREFERENCES:\nSafe foods / loves: '+(c.loves||'not specified')+'\nAversions / hard nos: '+(c.aversions||'none')+'\nNotes: '+(c.notes||'none')+'\n\nAPPROVED ROTATION MEALS: '+(rotM.join(', ')||'none yet')+'\n\nFEEDBACK HISTORY (most recent first):\n'+(rfb.join('\n')||'No feedback yet — first week or client has not submitted.')+'\n\nTHIS WEEK\'S CURRENT MENU: '+(curM.join(' | ')||'Nothing planned yet')+'\n\nBEHAVIOR:\n- Speak directly to '+chefN+' the chef.\n- Always reference specific family details and feedback history.\n- The more feedback history exists, the smarter your suggestions should be.\n- If feedback shows a meal was thumbs down, never suggest it again.\n- If a client requests something specific next week, prioritize it.\n- Flag allergens immediately with ⚠️ ALLERGY FLAG.\n- Suggest meals from the rotation bank when appropriate.\n- Be warm, specific, and practical.\n- When suggesting a weekly plan, format it clearly by day.';
+  return 'You are the AI menu planning assistant inside "The Table" -- built for Eddelbuttel Nutrition, owned by Brittany Eddelbuttel, RD.\nYou are helping '+chefN+' plan meals for '+c.name+'.\n\nFAMILY MEMBERS:\n'+(famSum.join('\n')||'Not added yet')+'\n\nALLERGIES -- NON-NEGOTIABLE:'+(alStr||'\nNo known allergies.')+'\n\nPREFERENCES:\nSafe foods / loves: '+(c.loves||'not specified')+'\nAversions / hard nos: '+(c.aversions||'none')+'\nNotes: '+(c.notes||'none')+'\n\nAPPROVED ROTATION MEALS: '+(rotM.join(', ')||'none yet')+'\n\nFEEDBACK HISTORY (most recent first):\n'+(rfb.join('\n')||'No feedback yet -- first week or client has not submitted.')+'\n\nTHIS WEEK\'S CURRENT MENU: '+(curM.join(' | ')||'Nothing planned yet')+'\n\nBEHAVIOR:\n- Speak directly to '+chefN+' the chef.\n- Always reference specific family details and feedback history.\n- The more feedback history exists, the smarter your suggestions should be.\n- If feedback shows a meal was thumbs down, never suggest it again.\n- If a client requests something specific next week, prioritize it.\n- Flag allergens immediately with (!) ALLERGY FLAG.\n- Suggest meals from the rotation bank when appropriate.\n- Be warm, specific, and practical.\n- When suggesting a weekly plan, format it clearly by day.';
 }
 
 function buildAIIntro(c){
@@ -1118,13 +1118,13 @@ function buildAIIntro(c){
   var topRot=[];
   if(c.rotationBank){for(var i=0;i<c.rotationBank.length;i++){if(topRot.length<3)topRot.push(c.rotationBank[i].name);}}
   var t='Hi '+chefN+'! Ready to plan for **'+c.name+'**.\n\n';
-  if(c.allergies&&c.allergies.length) t+='**⚠️ Allergies:** '+c.allergies.join(', ')+" — I'll flag anything containing these.\n";
+  if(c.allergies&&c.allergies.length) t+='**(!) Allergies:** '+c.allergies.join(', ')+" -- I'll flag anything containing these.\n";
   t+='**Loves:** '+(c.loves||'not specified')+'.\n';
   if(c.aversions) t+='**Aversions:** '+c.aversions+'.\n';
   if(topRot.length) t+='**Top rotation meals:** '+topRot.join(', ')+'.\n';
-  if(lf) t+='\n**Last feedback:** ★'+lf.overallRating+'/5'+(lf.overallNote?' — "'+lf.overallNote+'"':'')+(lf.nextWeek?' | Wants next week: '+lf.nextWeek:'');
-  if(!lf) t+='\n**No feedback yet** — working from the intake profile.';
-  if(c.feedbackHistory&&c.feedbackHistory.length>3) t+='\n\n*I have '+c.feedbackHistory.length+' weeks of feedback for this family — my suggestions are based on what\'s worked.*';
+  if(lf) t+='\n**Last feedback:** *'+lf.overallRating+'/5'+(lf.overallNote?' -- "'+lf.overallNote+'"':'')+(lf.nextWeek?' | Wants next week: '+lf.nextWeek:'');
+  if(!lf) t+='\n**No feedback yet** -- working from the intake profile.';
+  if(c.feedbackHistory&&c.feedbackHistory.length>3) t+='\n\n*I have '+c.feedbackHistory.length+' weeks of feedback for this family -- my suggestions are based on what\'s worked.*';
   t+='\n\nWhat are you thinking for this week?';
   if(!S.aiH[c.id])S.aiH[c.id]=[];
   S.aiH[c.id]=[{role:'assistant',content:t,intro:true}];
@@ -1149,10 +1149,10 @@ function rAI(){
   var fbCount=c.feedbackHistory?c.feedbackHistory.length:0;
   var ctx='<div class="ai-ctx">'+
     '<strong>'+esc(c.name)+'</strong>' +
-    (c.allergies&&c.allergies.length?' · <span style="color:var(--red-d)">⚠️ '+c.allergies.join(', ')+'</span>':'') +
-    (lf?' · Last rating: ★'+lf.overallRating+'/5':'') +
-    (fbCount>0?' · <span style="color:var(--sage-d)">'+fbCount+' weeks of feedback</span>':'') +
-    (lf&&lf.nextWeek?' · <span style="color:var(--blue-d)">Wants: '+esc(lf.nextWeek)+'</span>':'') +
+    (c.allergies&&c.allergies.length?' . <span style="color:var(--red-d)">(!) '+c.allergies.join(', ')+'</span>':'') +
+    (lf?' . Last rating: *'+lf.overallRating+'/5':'') +
+    (fbCount>0?' . <span style="color:var(--sage-d)">'+fbCount+' weeks of feedback</span>':'') +
+    (lf&&lf.nextWeek?' . <span style="color:var(--blue-d)">Wants: '+esc(lf.nextWeek)+'</span>':'') +
   '</div>';
   // Messages
   var msgs='';var aiHist=S.aiH[c.id]||[];
@@ -1211,7 +1211,7 @@ function sendAI(cid){
     .then(function(data){
       var parsed=typeof data==='string'?JSON.parse(data):data;
       var reply=(parsed.content&&parsed.content[0])?parsed.content[0].text:'Sorry, could not generate a response.';
-      var isFlag=reply.indexOf('⚠️ ALLERGY FLAG')>=0;
+      var isFlag=reply.indexOf('(!) ALLERGY FLAG')>=0;
       S.aiH[c.id].push({role:'assistant',content:reply,flag:isFlag});
       saveData();
       var aith=$('aith');if(aith)aith.parentNode.removeChild(aith);
@@ -1233,7 +1233,7 @@ function sendAI(cid){
     })
     .catch(function(){
       var aith=$('aith');if(aith)aith.parentNode.removeChild(aith);
-      if(chat){var el=document.createElement('div');el.className='aim ai';el.textContent='Connection error — please try again.';chat.appendChild(el);}
+      if(chat){var el=document.createElement('div');el.className='aim ai';el.textContent='Connection error -- please try again.';chat.appendChild(el);}
     });
 }
 
@@ -1241,7 +1241,7 @@ function parseAIMeals(text){
   var meals=[];var lines=text.split('\n');
   for(var i=0;i<lines.length;i++){
     var line=lines[i].trim();
-    var m=line.match(/^(?:\d+[\.\)]|[-•*]|\*\*)\s*(.+?)(?:\*\*)?(?:\s*[-—:].+)?$/);
+    var m=line.match(/^(?:\d+[\.\.\)]|[-*]|\*\*)\s*(.+?)(?:\*\*)?(?:\s*[-:].+)?$/);
     if(m){var name=m[1].replace(/\*\*/g,'').trim();if(name.length>4&&name.length<80&&name.split(' ').length>=2)meals.push({name:name,day:WDAYS[meals.length%7]});}
   }
   return meals;
@@ -1281,7 +1281,7 @@ function confirmAddAIMeals(cid,count){
   alert(added+' meal'+(added!==1?'s':'')+' added to the plan!');
 }
 
-// ── RECIPES ──────────────────────────────────────────────────────────────────
+// -- RECIPES ------------------------------------------------------------------
 function rRec(){
   if(S.recEdit!==null&&S.recEdit!==undefined){rRecEditor();return;}
   var filter=S.recFilter||'All';
@@ -1317,7 +1317,7 @@ function rRec(){
     recHtml+='<div class="card" style="cursor:pointer" onclick="S.recEdit='+ri+';rRec()">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start">'+
         '<div><div style="font-weight:500;font-size:14px">'+esc(r.name)+'</div>'+
-        '<div style="font-size:12px;color:var(--warm)">Serves '+(r.servings||'')+(r.prepTime?' · Prep '+r.prepTime:'')+'</div></div>'+
+        '<div style="font-size:12px;color:var(--warm)">Serves '+(r.servings||'')+(r.prepTime?' . Prep '+r.prepTime:'')+'</div></div>'+
         '<div>'+mtb(r.mealType||'Dinner')+tagHtml+'</div>'+
       '</div>'+
     '</div>';
@@ -1395,7 +1395,7 @@ function delRec(){
   RECIPES.splice(S.recEdit,1);S.recEdit=null;saveData();rRec();
 }
 
-// ── TEAM ─────────────────────────────────────────────────────────────────────
+// -- TEAM ---------------------------------------------------------------------
 var TCOLORS = ['#c0dd97','#9FE1CB','#B5D4F4','#FAC775','#AFA9EC','#F4B8C1','#C4B5F4'];
 
 function rTeam() {
@@ -1410,7 +1410,7 @@ function rTeam() {
         '<div style="width:34px;height:34px;border-radius:50%;background:'+(u.color||'var(--sage-l)')+';display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#2c2c2a;flex-shrink:0">'+esc(u.name.charAt(0))+'</div>' +
         '<div>' +
           '<div style="font-weight:500;font-size:13px">'+esc(u.name)+'</div>' +
-          '<div style="font-size:12px;color:var(--warm)">'+esc(u.email||'')+(u.role==='chef'&&assigned.length?' · '+assigned.length+' client'+(assigned.length!==1?'s':''):'')+'</div>' +
+          '<div style="font-size:12px;color:var(--warm)">'+esc(u.email||'')+(u.role==='chef'&&assigned.length?' . '+assigned.length+' client'+(assigned.length!==1?'s':''):'')+'</div>' +
         '</div>' +
       '</div>' +
       '<div style="display:flex;gap:6px">' +
@@ -1462,7 +1462,7 @@ function saveNewTeam() {
 
 function editTeamM(id) {
   var u=null;for(var i=0;i<TEAM.length;i++){if(TEAM[i].id===id){u=TEAM[i];break;}}if(!u)return;
-  openM('<h3 class="serif">Edit — '+esc(u.name)+'</h3>' +
+  openM('<h3 class="serif">Edit -- '+esc(u.name)+'</h3>' +
     '<div class="fg"><label>Full name</label><input id="et-name" value="'+esc(u.name)+'"></div>' +
     '<div class="fg"><label>Email</label><input id="et-email" value="'+esc(u.email||'')+'"></div>' +
     '<div class="fg"><label>New password <span style="font-weight:300">(leave blank to keep)</span></label><input id="et-pw" type="password" placeholder="Leave blank to keep"></div>' +
@@ -1496,7 +1496,7 @@ function removeTeamM(id) {
   saveData();rTeam();
 }
 
-// ── MODAL ────────────────────────────────────────────────────────────────────
+// -- MODAL --------------------------------------------------------------------
 function openM(html){$('mbox').innerHTML=html;$('mov').classList.add('open');}
 function closeM(){$('mov').classList.remove('open');}
 $('mov').addEventListener('click',function(e){if(e.target===this)closeM();});
