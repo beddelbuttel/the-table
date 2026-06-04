@@ -1501,5 +1501,37 @@ function openM(html){$('mbox').innerHTML=html;$('mov').classList.add('open');}
 function closeM(){$('mov').classList.remove('open');}
 $('mov').addEventListener('click',function(e){if(e.target===this)closeM();});
 </script>
+
+<script>
+// Prevent iOS rubber band scrolling on the app shell
+document.addEventListener('touchmove', function(e) {
+  var el = e.target;
+  // Allow scrolling inside scrollable elements
+  while (el && el !== document.body) {
+    var style = window.getComputedStyle(el);
+    var overflow = style.overflow + style.overflowY;
+    if (overflow.indexOf('scroll') > -1 || overflow.indexOf('auto') > -1) {
+      return; // let it scroll
+    }
+    el = el.parentElement;
+  }
+  e.preventDefault(); // block everything else
+}, { passive: false });
+
+// Prevent double-tap zoom
+var lastTap = 0;
+document.addEventListener('touchend', function(e) {
+  var now = Date.now();
+  if (now - lastTap < 300) {
+    e.preventDefault();
+  }
+  lastTap = now;
+}, { passive: false });
+
+// Prevent pull-to-refresh
+document.body.addEventListener('touchstart', function(e) {
+  if (e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+</script>
 </body>
 </html>
