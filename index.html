@@ -421,8 +421,6 @@ function rClientDetail() {
   var c = gc(S.wsCid); if(!c) return;
   var tabs = ['profile','meals','checklist'];
   var tabLbls = {profile:'Food Profile',meals:'This Week',checklist:'Service Checklist'};
-  if(S.role==='dietitian') tabs = ['profile','meals','checklist','edit'];
-  tabLbls.edit = 'Edit';
   var tabHtml = '<div class="tab-bar">';
   for(var i=0;i<tabs.length;i++){
     tabHtml += '<button class="tab-btn'+(S.clientTab===tabs[i]?' active':'')+'" onclick="S.clientTab=\''+tabs[i]+'\';rClientDetail()">'+tabLbls[tabs[i]]+'</button>';
@@ -430,10 +428,13 @@ function rClientDetail() {
   tabHtml += '</div>';
   var back = '<button class="btn" style="margin-bottom:1rem" onclick="go(\'clients\')"><i class="ti ti-arrow-left" style="font-size:13px"></i> All clients</button>';
   var content = '';
-  if(S.clientTab==='profile') content = rProfile(c);
+  if(S.clientTab==='profile') {
+    content = rProfile(c);
+    if(S.role==='dietitian'||S.role==='manager') content += rEditClient(c);
+    else if(S.role==='chef') content += rChefEditClient(c);
+  }
   else if(S.clientTab==='meals') content = rMeals(c);
   else if(S.clientTab==='checklist') content = rChecklist(c);
-  else if(S.clientTab==='edit') content = rEditClient(c);
   $('p-clients').innerHTML = back + '<h2 class="serif" style="font-size:22px;font-weight:400;margin-bottom:4px">'+esc(c.name)+'</h2>' +
     '<div style="font-size:12px;color:var(--warm);margin-bottom:1rem">'+
       (tu(c.chefId)?'Chef: '+tu(c.chefId).name.split(' ')[0]:'Unassigned') +
@@ -823,6 +824,26 @@ function clearChecklist(cid){
 }
 
 // -- EDIT CLIENT (dietitian only) ---------------------------------------------
+function rChefEditClient(c) {
+  return '<div class="card" style="margin-top:1rem">' +
+    '<div class="card-title" style="display:flex;align-items:center;gap:6px"><i class="ti ti-edit" style="font-size:12px"></i> Update preferences</div>' +
+    '<div class="fi" style="margin-bottom:10px"><label>Loves / safe foods</label><textarea id="ce-loves">'+esc(c.loves||'')+'</textarea></div>' +
+    '<div class="fi" style="margin-bottom:10px"><label>Dislikes / aversions / hard no\'s</label><textarea id="ce-aversions">'+esc(c.aversions||'')+'</textarea></div>' +
+    '<div class="fi" style="margin-bottom:12px"><label>Notes (family habits, preferences, observations)</label><textarea id="ce-notes">'+esc(c.notes||'')+'</textarea></div>' +
+    '<button class="btn bs bfull" onclick="saveChefEditClient('+c.id+')"><i class="ti ti-device-floppy"></i> Save preferences</button>' +
+  '</div>';
+}
+
+function saveChefEditClient(id){
+  var c=gc(id);if(!c)return;
+  c.loves=$('ce-loves').value;
+  c.aversions=$('ce-aversions').value;
+  c.notes=$('ce-notes').value;
+  saveData();
+  alert('Preferences saved!');
+  S.clientTab='profile';rClientDetail();
+}
+
 function rEditClient(c) {
   var chefOpts='<option value="">-- Unassigned --</option>';
   for(var i=0;i<TEAM.length;i++){
@@ -847,7 +868,7 @@ function rEditClient(c) {
     }
     coverageHtml += '</div></div>';
   }
-  return '<div class="card">' +
+  return '<div class="card" style="margin-top:1rem"><div class="card-title" style="display:flex;align-items:center;gap:6px"><i class="ti ti-edit" style="font-size:12px"></i> Edit profile</div>' +
     '<div class="g2">' +
       '<div class="fi"><label>Display name (first + last initial)</label><input id="ec-name" value="'+esc(c.name||'')+'"></div>' +
       '<div class="fi"><label>Service day</label><select id="ec-day">'+dayOpts+'</select></div>' +
